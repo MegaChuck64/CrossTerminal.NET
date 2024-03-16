@@ -23,6 +23,7 @@ internal class Renderer : IFontStashRenderer
         _textureManager = new Texture2DManager(graphicsDevice);
 
         _shaderProgram = SimpleShaderProgram.Create<VertexColorTexture>(graphicsDevice, 0, 0, true);
+
         _batch = new TextureBatcher(graphicsDevice);
         _batch.SetShaderProgram(_shaderProgram);
         OnViewportChanged();

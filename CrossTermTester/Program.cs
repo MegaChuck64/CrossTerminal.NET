@@ -6,7 +6,6 @@ namespace CrossTermTester
     {
         static void Main(string[] args)
         {
-
             using var terminal = new Terminal(
                 w: 800,
                 h: 600,

@@ -42,7 +42,7 @@ public class Terminal : IDisposable
         var options = WindowOptions.Default;
         options.Size = new Vector2D<int>(w, h);
         options.Title = title;
-        options.IsEventDriven = true;
+        options.IsEventDriven = true;       
         options.WindowBorder = WindowBorder.Fixed;
         
         _window = Window.Create(options);
@@ -130,6 +130,9 @@ public class Terminal : IDisposable
     private void _window_Load()
     {
         _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
+        _graphicsDevice.BlendState = BlendState.AlphaBlend;
+        _graphicsDevice.RasterizerEnabled = true;
+
         _renderer = new Renderer(_graphicsDevice);
 
         var input = _window.CreateInput();
@@ -148,7 +151,6 @@ public class Terminal : IDisposable
 
         _fontSystem = new FontSystem(fontSettings);
         _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
-
         _window_Resize(_window.Size);
     }
 
@@ -159,7 +161,7 @@ public class Terminal : IDisposable
 
         _loaded = true;
 
-        _graphicsDevice.ClearColor = new Vector4(0, 0, 0, 1);
+        _graphicsDevice.ClearColor = new Vector4(0, 0, 0.5f, 1);
         _graphicsDevice.Clear(ClearBuffers.Color);
 
         _renderer.Begin();
@@ -172,7 +174,7 @@ public class Terminal : IDisposable
         }
 
         var text = $"?> {_currentLine}";
-        DrawLine(text, font, 2f, y + (font.LineHeight + 8), FSColor.LightGreen);
+        DrawLine(text, font, 2f, y + (font.LineHeight + 6), FSColor.LightGreen);
 
         if (_isDebugging)
         {
@@ -190,7 +192,6 @@ public class Terminal : IDisposable
     {
         var scale = new Vector2(1, 1);
         var origin = new Vector2(0, 0);
-
         font.DrawText(_renderer, text, new Vector2(x, y), color, 0f, origin, scale);
     }
     private void DrawFPS(SpriteFontBase font, double dt)
