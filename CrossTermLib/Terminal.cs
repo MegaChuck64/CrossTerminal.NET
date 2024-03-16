@@ -12,6 +12,7 @@ namespace CrossTermLib;
 public class Terminal : IDisposable
 {
     private readonly IWindow _window;
+    private readonly string _fontPath;
 
     private Renderer _renderer = null!;
     private FontSystem _fontSystem = null!;
@@ -19,14 +20,14 @@ public class Terminal : IDisposable
 
     private List<string> _lines = [];
     private string _currentLine = string.Empty;
+
     private bool _entered = false;
     private bool _isDebugging = false;
     private bool _loaded = false;
     private bool _disposed = false;
-    private readonly string _fontPath;
+
     public int Width { get; private set; }
     public int Height { get; private set; }
-
     public bool IsClosing { get; private set; } = false;
 
     /// <summary>
@@ -56,42 +57,12 @@ public class Terminal : IDisposable
 
         _window.StateChanged += _window_StateChanged;
 
-        _window.Initialize();        
+        _window.Initialize();
 
         while (!_loaded) ;
     }
 
-    private void _window_StateChanged(WindowState obj)
-    {
-        if (obj != WindowState.Normal)
-            _window.WindowState = WindowState.Normal;
-    }
-
-    private void _window_Load()
-    {
-        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
-        _renderer = new Renderer(_graphicsDevice);
-
-        var input = _window.CreateInput();
-        for (int i = 0; i < input.Keyboards.Count; i++)
-        {
-            input.Keyboards[i].KeyDown += Terminal_KeyDown;
-            input.Keyboards[i].KeyChar += Terminal_KeyChar;
-        }
-
-        var fontSettings = new FontSystemSettings
-        {
-            FontResolutionFactor = 4,
-            KernelWidth = 1,
-            KernelHeight = 1,
-        };
-
-        _fontSystem = new FontSystem(fontSettings);
-        _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
-
-        _window_Resize(_window.Size);
-    }
-
+    #region Console Commands 
 
     /// <summary>
     /// Blocking until user presses enter
@@ -125,13 +96,16 @@ public class Terminal : IDisposable
         _window.DoEvents();
         _window.DoRender();
     }
-    private void _window_Closing()
-    {
-        IsClosing = true;
-        _graphicsDevice?.Dispose();
-        _fontSystem?.Dispose();
-    }
 
+    #endregion
+
+    #region Window Events
+
+    private void _window_StateChanged(WindowState obj)
+    {
+        if (obj != WindowState.Normal)
+            _window.WindowState = WindowState.Normal;
+    }
     private void _window_Resize(Vector2D<int> size)
     {
         if (IsClosing)
@@ -146,6 +120,37 @@ public class Terminal : IDisposable
         _window.DoRender();
     }
 
+    private void _window_Closing()
+    {
+        IsClosing = true;
+        _graphicsDevice?.Dispose();
+        _fontSystem?.Dispose();
+    }
+
+    private void _window_Load()
+    {
+        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
+        _renderer = new Renderer(_graphicsDevice);
+
+        var input = _window.CreateInput();
+        for (int i = 0; i < input.Keyboards.Count; i++)
+        {
+            input.Keyboards[i].KeyDown += Terminal_KeyDown;
+            input.Keyboards[i].KeyChar += Terminal_KeyChar;
+        }
+
+        var fontSettings = new FontSystemSettings
+        {
+            FontResolutionFactor = 4,
+            KernelWidth = 1,
+            KernelHeight = 1,
+        };
+
+        _fontSystem = new FontSystem(fontSettings);
+        _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
+
+        _window_Resize(_window.Size);
+    }
 
     private void _window_Render(double dt)
     {
@@ -177,6 +182,10 @@ public class Terminal : IDisposable
         _renderer.End();
     }
 
+    #endregion
+
+    #region Drawing
+    
     private void DrawLine(string text, SpriteFontBase font, float x, float y, FSColor color)
     {
         var scale = new Vector2(1, 1);
@@ -194,7 +203,10 @@ public class Terminal : IDisposable
         font.DrawText(_renderer, fpsTxt, new Vector2(2f, _window.Size.Y - sz.Y - 2), FSColor.Yellow, 0f, orgn, scl);
 
     }
+    #endregion
 
+    #region Input
+    
     private void Terminal_KeyChar(IKeyboard arg1, char arg2)
     {
         _currentLine += arg2;
@@ -221,6 +233,10 @@ public class Terminal : IDisposable
 
         _window.DoRender();
     }
+
+    #endregion
+    
+    #region Disposal
 
     protected virtual void Dispose(bool disposing)
     {
@@ -253,4 +269,6 @@ public class Terminal : IDisposable
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+    
+    #endregion
 }
