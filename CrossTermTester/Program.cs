@@ -7,7 +7,11 @@ namespace CrossTermTester
         static void Main(string[] args)
         {
 
-            using var terminal = new Terminal(800, 600, "Hollow World TESTER");
+            using var terminal = new Terminal(
+                w: 800,
+                h: 600,
+                title: "Hollow World TESTER",
+                fontPath: Path.Combine("Content", "Fonts", "SDS_8x8.ttf"));
 
             terminal.WriteLine("Testing...");
             terminal.WriteLine("Is this thing on?");

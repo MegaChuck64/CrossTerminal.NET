@@ -23,15 +23,29 @@ public class Terminal : IDisposable
     private bool _isDebugging = false;
     private bool _loaded = false;
     private bool _disposed = false;
+    private readonly string _fontPath;
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+
     public bool IsClosing { get; private set; } = false;
-    public Terminal(int w, int h, string title)
+
+    /// <summary>
+    /// Blocks until first render
+    /// </summary>
+    public Terminal(int w, int h, string title, string fontPath)
     {
+        _fontPath = fontPath;
+        Width = w;
+        Height = h;
+
         var options = WindowOptions.Default;
         options.Size = new Vector2D<int>(w, h);
         options.Title = title;
         options.IsEventDriven = true;
+        options.WindowBorder = WindowBorder.Fixed;
+        
         _window = Window.Create(options);
-
+        
         _window.Load += _window_Load;
 
         _window.Render += _window_Render;
@@ -40,13 +54,47 @@ public class Terminal : IDisposable
 
         _window.Resize += _window_Resize;
 
+        _window.StateChanged += _window_StateChanged;
+
         _window.Initialize();        
 
         while (!_loaded) ;
     }
 
+    private void _window_StateChanged(WindowState obj)
+    {
+        if (obj != WindowState.Normal)
+            _window.WindowState = WindowState.Normal;
+    }
+
+    private void _window_Load()
+    {
+        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
+        _renderer = new Renderer(_graphicsDevice);
+
+        var input = _window.CreateInput();
+        for (int i = 0; i < input.Keyboards.Count; i++)
+        {
+            input.Keyboards[i].KeyDown += Terminal_KeyDown;
+            input.Keyboards[i].KeyChar += Terminal_KeyChar;
+        }
+
+        var fontSettings = new FontSystemSettings
+        {
+            FontResolutionFactor = 4,
+            KernelWidth = 1,
+            KernelHeight = 1,
+        };
+
+        _fontSystem = new FontSystem(fontSettings);
+        _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
+
+        _window_Resize(_window.Size);
+    }
+
+
     /// <summary>
-    /// Blocking ReadLine call
+    /// Blocking until user presses enter
     /// </summary>
     /// <returns></returns>
     public string ReadLine()
@@ -92,34 +140,10 @@ public class Terminal : IDisposable
         _graphicsDevice.SetViewport(0, 0, (uint)size.X, (uint)size.Y);
         _renderer.OnViewportChanged();
 
+
         _window.ContinueEvents();
         _window.DoEvents();
         _window.DoRender();
-    }
-
-    private void _window_Load()
-    {
-        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
-        _renderer = new Renderer(_graphicsDevice);
-
-        var input = _window.CreateInput();
-        for (int i = 0; i < input.Keyboards.Count; i++)
-        {
-            input.Keyboards[i].KeyDown += Terminal_KeyDown;
-            input.Keyboards[i].KeyChar += Terminal_KeyChar;
-        }
-
-        var fontSettings = new FontSystemSettings
-        {
-            FontResolutionFactor = 4,
-            KernelWidth = 1,
-            KernelHeight = 1,
-        };
-
-        _fontSystem = new FontSystem(fontSettings);
-        _fontSystem.AddFont(File.ReadAllBytes(Path.Combine("Content", "Fonts", "SDS_8x8.ttf")));
-
-        _window_Resize(_window.Size);
     }
 
 
