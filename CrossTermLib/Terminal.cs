@@ -2,8 +2,9 @@
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using FontStashSharp;
+
 using System.Numerics;
+using FontStashSharp;
 using TrippyGL;
 using CrossTermLib.Internals;
 
@@ -69,6 +70,7 @@ public class Terminal : IDisposable
         _window.StateChanged += _window_StateChanged;
 
         _window.Initialize();
+        
 
         while (!_loaded) ;
     }
@@ -157,9 +159,9 @@ public class Terminal : IDisposable
 
         var fontSettings = new FontSystemSettings
         {
-            FontResolutionFactor = 4,
-            KernelWidth = 1,
-            KernelHeight = 1,
+            FontResolutionFactor = 2,
+            KernelWidth = 2,
+            KernelHeight = 2, 
         };
 
         _fontSystem = new FontSystem(fontSettings);
@@ -184,7 +186,7 @@ public class Terminal : IDisposable
         {
             var sz = font.MeasureString(line, Vector2.One);            
             DrawLine(line, font, 2f, y, FontColor.ToFS());
-            y += (sz.Y *1.5f);
+            y += (sz.Y + 2);
         }
 
         _cursorTimer += (float)dt;

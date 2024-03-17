@@ -43,7 +43,8 @@ internal class Renderer : IFontStashRenderer
     {
         var tex = (Texture2D)texture;
 
-        _batch.Draw(tex,
+        _batch.Draw(
+            tex,
             pos,
             src,
             color.ToTrippy(),
