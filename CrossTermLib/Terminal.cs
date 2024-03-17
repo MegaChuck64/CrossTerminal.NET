@@ -190,9 +190,9 @@ public class Terminal : IDisposable
     ///     to mimic a game loop
     ///  </para>
     /// </summary>
-    public void Tick(bool skipEvents)
+    public void Tick(bool addEmptyEvent)
     {
-        if (skipEvents)
+        if (addEmptyEvent)
             _window.ContinueEvents();
         
         _window.DoEvents();
@@ -206,7 +206,10 @@ public class Terminal : IDisposable
     private void _window_StateChanged(WindowState obj)
     {
         if (obj != WindowState.Normal)
+        {
             _window.WindowState = WindowState.Normal;
+            Tick(true);
+        }
     }
 
     private void _window_Resize(Vector2D<int> size)
