@@ -1,4 +1,5 @@
-﻿using CrossTermLib;
+﻿using System.Numerics;
+using CrossTermLib;
 
 namespace CrossTermTester
 {
@@ -9,12 +10,12 @@ namespace CrossTermTester
             using var terminal = new Terminal(
                 w: 800,
                 h: 600,
-                title: "Hollow World TESTER",
-                fontPath: Path.Combine("Content", "Fonts", "SDS_8x8.ttf"));
+                title: "My Test Window",
+                fontPath: Path.Combine("Content", "Fonts", "SDS_8x8.ttf"),
+                cursorBlinkSpeed: 0.4f,
+                backgroundColor: new Vector4(0f, 0.25f, 0.5f, 1f));
 
-            terminal.WriteLine("Testing...");
-            terminal.WriteLine("Is this thing on?");
-            terminal.WriteLine(":) - - - (:");
+            terminal.WriteLine("Hello World...");
             terminal.WriteLine("--------------");
 
             var invalid = false;
@@ -25,7 +26,7 @@ namespace CrossTermTester
                 if (invalid)
                     terminal.WriteLine("! Invalid Input !");
 
-                terminal.WriteLine("Enter Name: ...");
+                terminal.WriteLine("Enter Name...");
                 name = terminal.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(name))
@@ -49,6 +50,5 @@ namespace CrossTermTester
             terminal.WriteLine("Press enter to exit...");
             terminal.ReadLine();
         }
-
     }
 }

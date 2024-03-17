@@ -25,19 +25,26 @@ public class Terminal : IDisposable
     private bool _isDebugging = false;
     private bool _loaded = false;
     private bool _disposed = false;
+    private bool _showCursor = false;
+    private float _cursorTimer = 0f;
+    private int _cursorCol = 0;
 
     public int Width { get; private set; }
     public int Height { get; private set; }
+    public float CursorBlinkSpeed { get; private set; }
+    public Vector4 BackgroundColor { get; set; }
     public bool IsClosing { get; private set; } = false;
 
     /// <summary>
     /// Blocks until first render
     /// </summary>
-    public Terminal(int w, int h, string title, string fontPath)
+    public Terminal(int w, int h, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor)
     {
         _fontPath = fontPath;
         Width = w;
         Height = h;
+        CursorBlinkSpeed = cursorBlinkSpeed;
+        BackgroundColor = backgroundColor;
 
         var options = WindowOptions.Default;
         options.Size = new Vector2D<int>(w, h);
@@ -74,9 +81,9 @@ public class Terminal : IDisposable
         {
             _window.ContinueEvents();
             _window.DoEvents();
+            _window.DoRender();
         }
 
-        _window.DoRender();
 
         _entered = false;
 
@@ -161,7 +168,7 @@ public class Terminal : IDisposable
 
         _loaded = true;
 
-        _graphicsDevice.ClearColor = new Vector4(0, 0, 0.5f, 1);
+        _graphicsDevice.ClearColor = BackgroundColor;
         _graphicsDevice.Clear(ClearBuffers.Color);
 
         _renderer.Begin();
@@ -173,8 +180,15 @@ public class Terminal : IDisposable
             y += (font.LineHeight + 4);
         }
 
+        _cursorTimer += (float)dt;
+        if (_cursorTimer > CursorBlinkSpeed)
+        {
+            _cursorTimer = 0f;
+            _showCursor = !_showCursor;
+        }
+
         var text = $"?> {_currentLine}";
-        DrawLine(text, font, 2f, y + (font.LineHeight + 6), FSColor.LightGreen);
+        DrawLine(text, font, 2f, y + (font.LineHeight + 6), FSColor.LightGreen, _showCursor);
 
         if (_isDebugging)
         {
@@ -188,11 +202,22 @@ public class Terminal : IDisposable
 
     #region Drawing
     
-    private void DrawLine(string text, SpriteFontBase font, float x, float y, FSColor color)
+    private void DrawLine(string text, SpriteFontBase font, float x, float y, FSColor color, bool drawCursor = false)
     {
         var scale = new Vector2(1, 1);
         var origin = new Vector2(0, 0);
+        
         font.DrawText(_renderer, text, new Vector2(x, y), color, 0f, origin, scale);
+        if (drawCursor)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            var cursPos = _cursorCol > text.Length - 1 ? text.Length - 1 : _cursorCol;
+            var shrtStr = font.MeasureString(new string(text.Take(cursPos + 3).ToArray()), scale);
+            var xPos = shrtStr.X;
+            font.DrawText(_renderer, "_", new Vector2(xPos, y + 4), color, 0f, origin, scale);
+        }
     }
     private void DrawFPS(SpriteFontBase font, double dt)
     {
@@ -211,6 +236,7 @@ public class Terminal : IDisposable
     private void Terminal_KeyChar(IKeyboard arg1, char arg2)
     {
         _currentLine += arg2;
+        _cursorCol++;
         _window.DoRender();
     }
 
