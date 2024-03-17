@@ -21,7 +21,8 @@ namespace CrossTermTester
             {
                 RunProgram(new ConsoleWrapper());
             }
-            else
+            
+            if (args.Contains("t"))
             {
                 string[] fonts =
                 [
@@ -104,18 +105,22 @@ namespace CrossTermTester
         public bool IsClosing => false;
     }
 
-    internal class TerminalWrapper(
-        int cols,
-        int rows,
-        string title,
-        string fontPath,
-        float cursorSpeed,
-        Vector4 backgroundColor,
-        Vector4 fontColor,
-        int fontSize) : IConsole, IDisposable
+    internal class TerminalWrapper : IConsole, IDisposable
     {
-        private readonly Terminal _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);
+        private readonly Terminal _terminal;
         private bool disposedValue;
+        public TerminalWrapper(
+            int cols,
+            int rows,
+            string title,
+            string fontPath,
+            float cursorSpeed,
+            Vector4 backgroundColor,
+            Vector4 fontColor,
+            int fontSize)
+        {
+            _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);
+        }
 
         public void WriteLine(string message) => _terminal.WriteLine(message);
         public string? ReadLine() => _terminal.ReadLine();

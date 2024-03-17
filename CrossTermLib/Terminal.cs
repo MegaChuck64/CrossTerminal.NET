@@ -7,7 +7,6 @@ using System.Numerics;
 using FontStashSharp;
 using TrippyGL;
 using CrossTermLib.Internals;
-using System.Runtime.CompilerServices;
 
 namespace CrossTermLib;
 
@@ -15,21 +14,24 @@ public class Terminal : IDisposable
 {
     private readonly IWindow _window;
     private readonly string _fontPath;
-    private readonly List<string> _lines = [];
 
     private Renderer _renderer = null!;
     private FontSystem _fontSystem = null!;
     private GraphicsDevice _graphicsDevice = null!;
 
-    private string _currentLine = string.Empty;
+    private int _currentCol = 0;
+    private int _currentRow = 0;
+    private char[,] _buffer;
 
     private bool _entered = false;
     private bool _isDebugging = false;
     private bool _loaded = false;
-    private bool _disposed = false;
+
     private bool _showCursor = false;
     private float _cursorTimer = 0f;
-    private int _cursorCol = 0;
+
+    private bool _disposed = false;
+
     private Vector2 _characterSize = Vector2.One;
 
     public int PixelWidth { get; private set; }
@@ -38,14 +40,22 @@ public class Terminal : IDisposable
     public int Rows { get; private set; }
     public bool IsClosing { get; private set; } = false;
     public float CursorBlinkSpeed { get; set; }
-    public Vector4 BackgroundColor { get; set; }
     public int FontSize { get; set; }
     public Vector4 FontColor { get; set; }
+    public Vector4 BackgroundColor { get; set; }
 
     /// <summary>
     /// Blocks until first render
     /// </summary>
-    public Terminal(int cols, int rows, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor, Vector4 fontColor, int fontSize)
+    public Terminal(
+        int cols, 
+        int rows, 
+        string title, 
+        string fontPath, 
+        float cursorBlinkSpeed, 
+        Vector4 backgroundColor, 
+        Vector4 fontColor, 
+        int fontSize)
     {
         _fontPath = fontPath;
         FontSize = fontSize;
@@ -68,11 +78,24 @@ public class Terminal : IDisposable
         _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
 
         var font = _fontSystem.GetFont(FontSize);
-        _characterSize = font.MeasureString("W");
+        _characterSize = font.MeasureString("W") * 1.04f;
         //add 4% to pad the width and height of each character
-        PixelWidth = (int)Math.Round((_characterSize.X * 1.04f) * Cols);
-        PixelHeight = (int)Math.Round((_characterSize.Y * 1.04f) * Rows);
+        PixelWidth = (int)Math.Round(_characterSize.X * Cols);
+        PixelHeight = (int)Math.Round(_characterSize.Y * Rows);
 
+        _buffer = new char[Cols, Rows];
+        for (int x = 0; x < Cols; x++)
+        {
+            for (int y = 0; y < Rows; y++)
+            {
+                var c = ' ';
+
+                if (x == 0 || y == 0 || x == Cols - 1 || y == Rows - 1)
+                    c = 'W';
+
+                _buffer[x, y] = c;
+            }
+        }
 
         var options = WindowOptions.Default;
         options.Size = new Vector2D<int>(PixelWidth, PixelHeight);
@@ -113,17 +136,46 @@ public class Terminal : IDisposable
 
         _entered = false;
 
-        return _lines.Last();
+        var line = string.Empty;
+        for (int i = 0; i < Cols; i++)
+        {
+            line += _buffer[i,_currentRow-1];
+        }
+        return line.Trim();
     }
     public void WriteLine(string msg)
     {
-        _lines.Add(msg);
+        var ndx = _currentCol;
+
+        foreach (var c in msg)
+        {
+            _buffer[ndx,_currentRow] = c;
+            
+            ndx++;
+
+            if (ndx > Cols - 1)
+                break;
+        }
+
+        _currentCol = 0;
+        _currentRow++;
+        if (_currentRow > Rows - 1)
+            _currentRow = Rows - 1;
+
         _window.DoRender();
     }
 
     public void Clear()
     {
-        _lines.Clear();
+        for (int x = 0; x < Cols; x++)
+        {
+            for (int y = 0; y < Rows; y++)
+            {
+                _buffer[x, y] = ' ';
+            }
+        }
+        _currentCol = 0;
+        _currentRow = 0;
         Tick(true);
     }
 
@@ -147,11 +199,16 @@ public class Terminal : IDisposable
 
         _window.DoRender();
     }
+    
+    /// <summary>
+    /// This might only be needed for WSL
+    /// </summary>
     private void _window_StateChanged(WindowState obj)
     {
         if (obj != WindowState.Normal)
             _window.WindowState = WindowState.Normal;
     }
+
     private void _window_Resize(Vector2D<int> size)
     {
         if (IsClosing)
@@ -201,24 +258,11 @@ public class Terminal : IDisposable
         _graphicsDevice.Clear(ClearBuffers.Color);
 
         _renderer.Begin();
+
         var font = _fontSystem.GetFont(FontSize);
-        var y = 2f;
-        foreach (var line in _lines)
-        {
-            var sz = font.MeasureString(line, Vector2.One);            
-            DrawLine(line, font, 2f, y, FontColor.ToFS());
-            y += (sz.Y + 2);
-        }
-
         _cursorTimer += (float)dt;
-        if (_cursorTimer > CursorBlinkSpeed)
-        {
-            _cursorTimer = 0f;
-            _showCursor = !_showCursor;
-        }
 
-        DrawLine(_currentLine, font, 2f, y, FontColor.ToFS(), _showCursor);
-
+        DrawBuffer(font);
         if (_isDebugging)
         {
             DrawFPS(font, dt);
@@ -231,20 +275,29 @@ public class Terminal : IDisposable
 
     #region Drawing
     
-    private void DrawLine(string text, SpriteFontBase font, float x, float y, FSColor color, bool drawCursor = false)
+    private void DrawBuffer(SpriteFontBase font)
     {
-        var scale = new Vector2(1, 1);
-        var origin = new Vector2(0, 0);
-        
-        font.DrawText(_renderer, text, new Vector2(x, y), color, 0f, origin, scale);
-        if (drawCursor)
+        if (_cursorTimer > CursorBlinkSpeed)
         {
-            var cursPos = _cursorCol > text.Length - 1 ? text.Length - 1 : _cursorCol;
-            var shrtStr = font.MeasureString(new string(text.Take(cursPos + 1).ToArray()), scale);
-            var xPos = shrtStr.X + 2;
-            font.DrawText(_renderer, "_", new Vector2(xPos, y + 4), color, 0f, origin, scale);
+            _cursorTimer = 0f;
+            _showCursor = !_showCursor;
+        }
+
+        for (int x = 0; x < Cols; x++)
+        {
+            for (int y = 0; y < Rows; y++)
+            {
+                var xPos = x * _characterSize.X;
+                var yPos = y * _characterSize.Y;
+                font.DrawText(_renderer, _buffer[x, y].ToString(), new Vector2(xPos, yPos), FontColor.ToFS());
+                if (_showCursor && x == _currentCol && y == _currentRow)
+                {
+                    font.DrawText(_renderer, "_", new Vector2(xPos, yPos + 2), FontColor.ToFS());
+                }
+            }
         }
     }
+
     private void DrawFPS(SpriteFontBase font, double dt)
     {
         var fpsTxt = $"FPS: {(int)Math.Round(1f / (float)dt)}";
@@ -261,8 +314,10 @@ public class Terminal : IDisposable
     
     private void Terminal_KeyChar(IKeyboard arg1, char arg2)
     {
-        _currentLine += arg2;
-        _cursorCol++;
+        _buffer[_currentCol, _currentRow] = arg2;
+        if (_currentCol < Cols - 1)
+            _currentCol++;
+
         _window.DoRender();
     }
 
@@ -275,8 +330,7 @@ public class Terminal : IDisposable
         }
         else if (arg2 == Key.Enter)
         {
-            _lines.Add(_currentLine);
-            _currentLine = string.Empty;
+            WriteLine(string.Empty);
             _entered = true;
         }
         else if (arg2 == Key.GraveAccent)
@@ -285,8 +339,19 @@ public class Terminal : IDisposable
         }
         else if (arg2 == Key.Backspace)
         {
-            if (_currentLine?.Length > 0)
-                _currentLine = _currentLine.Remove(_currentLine.Length - 1);
+            //this is kind of weird behavior... ?
+            if (_currentCol == Cols - 1 && _buffer[_currentCol, _currentRow] != ' ')
+            {
+                _buffer[_currentCol, _currentRow] = ' ';
+            }
+            else
+            {
+
+                if (_currentCol > 0)
+                    _currentCol--;
+
+                _buffer[_currentCol, _currentRow] = ' ';
+            }
         }
 
         _window.DoRender();
