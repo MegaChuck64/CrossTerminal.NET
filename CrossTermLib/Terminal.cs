@@ -7,6 +7,7 @@ using System.Numerics;
 using FontStashSharp;
 using TrippyGL;
 using CrossTermLib.Internals;
+using System.Runtime.CompilerServices;
 
 namespace CrossTermLib;
 
@@ -29,9 +30,12 @@ public class Terminal : IDisposable
     private bool _showCursor = false;
     private float _cursorTimer = 0f;
     private int _cursorCol = 0;
+    private Vector2 _characterSize = Vector2.One;
 
-    public int Width { get; private set; }
-    public int Height { get; private set; }
+    public int PixelWidth { get; private set; }
+    public int PixelHeight { get; private set; }
+    public int Cols { get; private set; }
+    public int Rows { get; private set; }
     public bool IsClosing { get; private set; } = false;
     public float CursorBlinkSpeed { get; set; }
     public Vector4 BackgroundColor { get; set; }
@@ -41,18 +45,37 @@ public class Terminal : IDisposable
     /// <summary>
     /// Blocks until first render
     /// </summary>
-    public Terminal(int w, int h, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor, Vector4 fontColor, int fontSize)
+    public Terminal(int cols, int rows, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor, Vector4 fontColor, int fontSize)
     {
         _fontPath = fontPath;
         FontSize = fontSize;
-        Width = w;
-        Height = h;
+        Cols = cols;
+        Rows = rows;
+
         CursorBlinkSpeed = cursorBlinkSpeed;
         BackgroundColor = backgroundColor;
         FontColor = fontColor;
 
+
+        var fontSettings = new FontSystemSettings
+        {
+            FontResolutionFactor = 2,
+            KernelWidth = 2,
+            KernelHeight = 2,
+        };
+
+        _fontSystem = new FontSystem(fontSettings);
+        _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
+
+        var font = _fontSystem.GetFont(FontSize);
+        _characterSize = font.MeasureString("W");
+        //add 4% to pad the width and height of each character
+        PixelWidth = (int)Math.Round((_characterSize.X * 1.04f) * Cols);
+        PixelHeight = (int)Math.Round((_characterSize.Y * 1.04f) * Rows);
+
+
         var options = WindowOptions.Default;
-        options.Size = new Vector2D<int>(w, h);
+        options.Size = new Vector2D<int>(PixelWidth, PixelHeight);
         options.Title = title;
         options.IsEventDriven = true;       
         options.WindowBorder = WindowBorder.Fixed;
@@ -73,7 +96,7 @@ public class Terminal : IDisposable
         
 
         while (!_loaded) ;
-    }
+    }    
 
     #region Console Commands 
 
@@ -85,11 +108,8 @@ public class Terminal : IDisposable
     {
         while (!_entered && !IsClosing)
         {
-            _window.ContinueEvents();
-            _window.DoEvents();
-            _window.DoRender();
+            Tick(true);
         }
-
 
         _entered = false;
 
@@ -104,16 +124,29 @@ public class Terminal : IDisposable
     public void Clear()
     {
         _lines.Clear();
-
-        _window.ContinueEvents();
-        _window.DoEvents();
-        _window.DoRender();
+        Tick(true);
     }
 
     #endregion
 
     #region Window Events
 
+    /// <summary>
+    /// Tick will be called automatically if you are using a WriteLine and Readline flow. 
+    /// <para> 
+    ///     If you don't call either of those functions, you can call this directly in a while loop
+    ///     to mimic a game loop
+    ///  </para>
+    /// </summary>
+    public void Tick(bool skipEvents)
+    {
+        if (skipEvents)
+            _window.ContinueEvents();
+        
+        _window.DoEvents();
+
+        _window.DoRender();
+    }
     private void _window_StateChanged(WindowState obj)
     {
         if (obj != WindowState.Normal)
@@ -127,10 +160,7 @@ public class Terminal : IDisposable
         _graphicsDevice.SetViewport(0, 0, (uint)size.X, (uint)size.Y);
         _renderer.OnViewportChanged();
 
-
-        _window.ContinueEvents();
-        _window.DoEvents();
-        _window.DoRender();
+        Tick(false);
     }
 
     private void _window_Closing()
@@ -157,15 +187,6 @@ public class Terminal : IDisposable
             input.Keyboards[i].KeyChar += Terminal_KeyChar;
         }
 
-        var fontSettings = new FontSystemSettings
-        {
-            FontResolutionFactor = 2,
-            KernelWidth = 2,
-            KernelHeight = 2, 
-        };
-
-        _fontSystem = new FontSystem(fontSettings);
-        _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
         _window_Resize(_window.Size);
     }
 

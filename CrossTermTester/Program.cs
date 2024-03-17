@@ -10,8 +10,8 @@ namespace CrossTermTester
 #if DEBUG
             args =
             [
-                "c",
-                //"t"
+                //"c",
+                "t"
             ];
 #endif
             if (args.Length == 0)
@@ -34,8 +34,8 @@ namespace CrossTermTester
                 ];
 
                 using var term = new TerminalWrapper(
-                    w: 800,
-                    h: 600,
+                    cols: 40,
+                    rows: 20,
                     title: "My Test Window",
                     fontPath: Path.Combine("Content", "Fonts", $"{fonts[5]}.ttf"),
                     cursorSpeed: 0.4f,
@@ -89,7 +89,7 @@ namespace CrossTermTester
     }
 
     internal interface IConsole
-    {
+    {        
         void WriteLine(string message);
         string? ReadLine();
         void Clear();
@@ -98,15 +98,15 @@ namespace CrossTermTester
 
     internal class ConsoleWrapper : IConsole
     {
-        public void WriteLine(string message) => Console.WriteLine(message);
+        public void WriteLine(string message) => Console.WriteLine(message);        
         public string? ReadLine() => Console.ReadLine();
         public void Clear() => Console.Clear();
         public bool IsClosing => false;
     }
 
     internal class TerminalWrapper(
-        int w,
-        int h,
+        int cols,
+        int rows,
         string title,
         string fontPath,
         float cursorSpeed,
@@ -114,14 +114,14 @@ namespace CrossTermTester
         Vector4 fontColor,
         int fontSize) : IConsole, IDisposable
     {
-        private readonly Terminal _terminal = new(w, h, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);
+        private readonly Terminal _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);
         private bool disposedValue;
 
         public void WriteLine(string message) => _terminal.WriteLine(message);
         public string? ReadLine() => _terminal.ReadLine();
         public void Clear() => _terminal.Clear();
         public bool IsClosing => _terminal.IsClosing;
-
+        public void Tick() => _terminal.Tick(true);
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
