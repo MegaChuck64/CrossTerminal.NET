@@ -7,6 +7,21 @@
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<PackageId>CrossTerminal.NET</PackageId>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/MegaChuck64/CrossTerminal.NET.git</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/MegaChuck64/CrossTerminal.NET</PackageProjectUrl>
+		<PackageVersion>0.0.1-beta</PackageVersion>
+		<Authors>MegaChuck64</Authors>
+		<Description>
+			Cross-Platform Terminal mimicking System.Console functionality.
+			Uses Silk.Net, TrippyGL, and FontStashSharp to open a GUI window.
+			Useful if you want to make a cross platform console app with more control
+			over fonts, sizing, colors ect. Can support high speed character drawing as well.
+		</Description>
+	</PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="FontStashSharp" Version="1.3.6" />
     <PackageReference Include="Silk.NET.Input" Version="2.20.0" />
