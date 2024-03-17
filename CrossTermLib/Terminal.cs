@@ -13,12 +13,12 @@ public class Terminal : IDisposable
 {
     private readonly IWindow _window;
     private readonly string _fontPath;
+    private readonly List<string> _lines = [];
 
     private Renderer _renderer = null!;
     private FontSystem _fontSystem = null!;
     private GraphicsDevice _graphicsDevice = null!;
 
-    private List<string> _lines = [];
     private string _currentLine = string.Empty;
 
     private bool _entered = false;
@@ -31,20 +31,24 @@ public class Terminal : IDisposable
 
     public int Width { get; private set; }
     public int Height { get; private set; }
-    public float CursorBlinkSpeed { get; private set; }
-    public Vector4 BackgroundColor { get; set; }
     public bool IsClosing { get; private set; } = false;
+    public float CursorBlinkSpeed { get; set; }
+    public Vector4 BackgroundColor { get; set; }
+    public int FontSize { get; set; }
+    public Vector4 FontColor { get; set; }
 
     /// <summary>
     /// Blocks until first render
     /// </summary>
-    public Terminal(int w, int h, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor)
+    public Terminal(int w, int h, string title, string fontPath, float cursorBlinkSpeed, Vector4 backgroundColor, Vector4 fontColor, int fontSize)
     {
         _fontPath = fontPath;
+        FontSize = fontSize;
         Width = w;
         Height = h;
         CursorBlinkSpeed = cursorBlinkSpeed;
         BackgroundColor = backgroundColor;
+        FontColor = fontColor;
 
         var options = WindowOptions.Default;
         options.Size = new Vector2D<int>(w, h);
@@ -136,9 +140,11 @@ public class Terminal : IDisposable
 
     private void _window_Load()
     {
-        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window));
-        _graphicsDevice.BlendState = BlendState.AlphaBlend;
-        _graphicsDevice.RasterizerEnabled = true;
+        _graphicsDevice = new GraphicsDevice(GL.GetApi(_window))
+        {
+            BlendState = BlendState.AlphaBlend,
+            RasterizerEnabled = true
+        };
 
         _renderer = new Renderer(_graphicsDevice);
 
@@ -172,12 +178,13 @@ public class Terminal : IDisposable
         _graphicsDevice.Clear(ClearBuffers.Color);
 
         _renderer.Begin();
-        var font = _fontSystem.GetFont(12);
+        var font = _fontSystem.GetFont(FontSize);
         var y = 2f;
         foreach (var line in _lines)
         {
-            DrawLine(line, font, 2f, y, FSColor.Green);
-            y += (font.LineHeight + 4);
+            var sz = font.MeasureString(line, Vector2.One);            
+            DrawLine(line, font, 2f, y, FontColor.ToFS());
+            y += (sz.Y *1.5f);
         }
 
         _cursorTimer += (float)dt;
@@ -187,8 +194,7 @@ public class Terminal : IDisposable
             _showCursor = !_showCursor;
         }
 
-        var text = $"?> {_currentLine}";
-        DrawLine(text, font, 2f, y + (font.LineHeight + 6), FSColor.LightGreen, _showCursor);
+        DrawLine(_currentLine, font, 2f, y, FontColor.ToFS(), _showCursor);
 
         if (_isDebugging)
         {
@@ -210,12 +216,9 @@ public class Terminal : IDisposable
         font.DrawText(_renderer, text, new Vector2(x, y), color, 0f, origin, scale);
         if (drawCursor)
         {
-            if (string.IsNullOrWhiteSpace(text))
-                return;
-
             var cursPos = _cursorCol > text.Length - 1 ? text.Length - 1 : _cursorCol;
-            var shrtStr = font.MeasureString(new string(text.Take(cursPos + 3).ToArray()), scale);
-            var xPos = shrtStr.X;
+            var shrtStr = font.MeasureString(new string(text.Take(cursPos + 1).ToArray()), scale);
+            var xPos = shrtStr.X + 2;
             font.DrawText(_renderer, "_", new Vector2(xPos, y + 4), color, 0f, origin, scale);
         }
     }

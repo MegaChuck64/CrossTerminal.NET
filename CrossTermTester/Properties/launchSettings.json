@@ -1,8 +1,12 @@
 {
   "profiles": {
     "CrossTermTester": {
-      "commandName": "Project",
-      "nativeDebugging": true
+      "commandName": "Project"
+    },
+    "WSL2": {
+      "commandName": "Executable",
+      "executablePath": "wsl",
+      "commandLineArgs": "dotnet CrossTermTester.dll [commandLineArgs]"
     },
     "WSL": {
       "commandName": "WSL2",

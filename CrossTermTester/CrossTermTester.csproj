@@ -9,11 +9,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Content\Fonts\Asphalt.ttf" />
+    <None Remove="Content\Fonts\FUTURAM.ttf" />
     <None Remove="Content\Fonts\SDS_8x8.ttf" />
+    <None Remove="Content\Fonts\Swansea.ttf" />
+    <None Remove="Content\Fonts\TitilliumWeb.ttf" />
+    <None Remove="Content\Fonts\Ubuntu.ttf" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Content\Fonts\Asphalt.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Fonts\FUTURAM.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\Fonts\SDS_8x8.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Fonts\Swansea.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Fonts\TitilliumWeb.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\Fonts\Ubuntu.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
