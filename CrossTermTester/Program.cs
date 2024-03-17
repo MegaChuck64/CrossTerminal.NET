@@ -29,7 +29,7 @@ namespace CrossTermTester
                     title: "My Test Window",
                     fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
                     cursorSpeed: 0.4f,
-                    backgroundColor: new Vector4(0.2f, 0.25f, 0.2f, 1f),
+                    backgroundColor: new Vector4(0f, 0f, 0f, 1f),
                     fontColor: new Vector4(1f, 1f, 1f, 1f),
                     fontSize: 22);
 

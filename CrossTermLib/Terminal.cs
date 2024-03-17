@@ -260,6 +260,11 @@ public class Terminal : IDisposable
         {
             _isDebugging = !_isDebugging;
         }
+        else if (arg2 == Key.Backspace)
+        {
+            if (_currentLine?.Length > 0)
+                _currentLine = _currentLine.Remove(_currentLine.Length - 1);
+        }
 
         _window.DoRender();
     }
