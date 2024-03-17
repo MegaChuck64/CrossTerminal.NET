@@ -10,8 +10,8 @@ namespace CrossTermTester
 #if DEBUG
             args =
             [
-                //"c",
-                "t"
+                "c",
+                //"t"
             ];
 #endif
             if (args.Length == 0)
@@ -23,11 +23,21 @@ namespace CrossTermTester
             }
             else
             {
+                string[] fonts =
+                [
+                    "Asphalt",
+                    "FUTURAM",
+                    "SDS_8x8",
+                    "Swansea",
+                    "TitilliumWeb",
+                    "Ubuntu",
+                ];
+
                 using var term = new TerminalWrapper(
                     w: 800,
                     h: 600,
                     title: "My Test Window",
-                    fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
+                    fontPath: Path.Combine("Content", "Fonts", $"{fonts[5]}.ttf"),
                     cursorSpeed: 0.4f,
                     backgroundColor: new Vector4(0f, 0f, 0f, 1f),
                     fontColor: new Vector4(1f, 1f, 1f, 1f),
@@ -95,13 +105,13 @@ namespace CrossTermTester
     }
 
     internal class TerminalWrapper(
-        int w, 
-        int h, 
-        string title, 
-        string fontPath, 
-        float cursorSpeed, 
-        Vector4 backgroundColor, 
-        Vector4 fontColor, 
+        int w,
+        int h,
+        string title,
+        string fontPath,
+        float cursorSpeed,
+        Vector4 backgroundColor,
+        Vector4 fontColor,
         int fontSize) : IConsole, IDisposable
     {
         private readonly Terminal _terminal = new(w, h, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);

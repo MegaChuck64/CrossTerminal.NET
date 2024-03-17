@@ -3,12 +3,12 @@
     "CrossTermTester": {
       "commandName": "Project"
     },
-    "WSL2": {
+    "WSL (No Debug)": {
       "commandName": "Executable",
       "executablePath": "wsl",
       "commandLineArgs": "dotnet CrossTermTester.dll [commandLineArgs]"
     },
-    "WSL": {
+    "WSL (No Console Window)": {
       "commandName": "WSL2",
       "distributionName": ""
     }
