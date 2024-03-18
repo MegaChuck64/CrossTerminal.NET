@@ -19,21 +19,27 @@ public class Terminal : IDisposable
     private FontSystem _fontSystem = null!;
     private GraphicsDevice _graphicsDevice = null!;
 
+    private Vector2 _characterSize = Vector2.One;
     private int _currentCol = 0;
     private int _currentRow = 0;
     private char[,] _buffer;
 
     private bool _entered = false;
-    private bool _isDebugging = false;
     private bool _loaded = false;
+    private bool _isDebugging = false;
 
     private bool _showCursor = false;
     private float _cursorTimer = 0f;
 
     private bool _disposed = false;
 
-    private Vector2 _characterSize = Vector2.One;
-
+    /// <summary>
+    /// This number is multiplied by pixel width and height of 
+    /// the 'W' character to calculate the character size.
+    /// Character size is the width/height size of a cell.
+    /// The whole window is divided into an evenly spaced grid (cols*rows).
+    /// </summary>
+    public float PaddingPercentage { get; private set; }
     public int PixelWidth { get; private set; }
     public int PixelHeight { get; private set; }
     public int Cols { get; private set; }
@@ -41,6 +47,7 @@ public class Terminal : IDisposable
     public bool IsClosing { get; private set; } = false;
     public float CursorBlinkSpeed { get; set; }
     public int FontSize { get; set; }
+
     public Vector4 FontColor { get; set; }
     public Vector4 BackgroundColor { get; set; }
 
@@ -55,7 +62,8 @@ public class Terminal : IDisposable
         float cursorBlinkSpeed, 
         Vector4 backgroundColor, 
         Vector4 fontColor, 
-        int fontSize)
+        int fontSize,
+        float paddingPercentage)
     {
         _fontPath = fontPath;
         FontSize = fontSize;
@@ -65,7 +73,7 @@ public class Terminal : IDisposable
         CursorBlinkSpeed = cursorBlinkSpeed;
         BackgroundColor = backgroundColor;
         FontColor = fontColor;
-
+        PaddingPercentage = paddingPercentage;
 
         var fontSettings = new FontSystemSettings
         {
@@ -78,8 +86,8 @@ public class Terminal : IDisposable
         _fontSystem.AddFont(File.ReadAllBytes(_fontPath));
 
         var font = _fontSystem.GetFont(FontSize);
-        _characterSize = font.MeasureString("W") * 1.04f;
-        //add 4% to pad the width and height of each character
+        var wSize = font.MeasureString("W");
+        _characterSize = new Vector2(wSize.X, font.LineHeight) * PaddingPercentage;
         PixelWidth = (int)Math.Round(_characterSize.X * Cols);
         PixelHeight = (int)Math.Round(_characterSize.Y * Rows);
 
@@ -258,7 +266,7 @@ public class Terminal : IDisposable
         _loaded = true;
 
         _graphicsDevice.ClearColor = BackgroundColor;
-        _graphicsDevice.Clear(ClearBuffers.Color);
+        _graphicsDevice.Clear(ClearBuffers.Color);        
 
         _renderer.Begin();
 
@@ -294,7 +302,7 @@ public class Terminal : IDisposable
                 var yPos = y * _characterSize.Y;
                 font.DrawText(_renderer, _buffer[x, y].ToString(), new Vector2(xPos, yPos), FontColor.ToFS());
                 if (_showCursor && x == _currentCol && y == _currentRow)
-                {
+                {                    
                     font.DrawText(_renderer, "_", new Vector2(xPos, yPos + 2), FontColor.ToFS());
                 }
             }

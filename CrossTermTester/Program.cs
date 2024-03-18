@@ -24,25 +24,25 @@ namespace CrossTermTester
             
             if (args.Contains("t"))
             {
-                string[] fonts =
+                (string name, float padding)[] fonts =
                 [
-                    "Asphalt",
-                    "FUTURAM",
-                    "SDS_8x8",
-                    "Swansea",
-                    "TitilliumWeb",
-                    "Ubuntu",
+                    ("Asphalt", 1.05f),     //0
+                    ("SDS_8x8", 1.125f),    //1
+                    ("Ubuntu",  1.1f)       //2
                 ];
+
+                var choice = 0;
 
                 using var term = new TerminalWrapper(
                     cols: 40,
                     rows: 20,
                     title: "My Test Window",
-                    fontPath: Path.Combine("Content", "Fonts", $"{fonts[5]}.ttf"),
+                    fontPath: Path.Combine("Content", "Fonts", $"{fonts[choice].name}.ttf"),
                     cursorSpeed: 0.4f,
                     backgroundColor: new Vector4(0f, 0f, 0f, 1f),
                     fontColor: new Vector4(1f, 1f, 1f, 1f),
-                    fontSize: 22);
+                    fontSize: 22,
+                    paddingPercentage: fonts[choice].padding);
 
                 RunProgram(term);
             }
@@ -117,9 +117,10 @@ namespace CrossTermTester
             float cursorSpeed,
             Vector4 backgroundColor,
             Vector4 fontColor,
-            int fontSize)
+            int fontSize,
+            float paddingPercentage)
         {
-            _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize);
+            _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize, paddingPercentage);
         }
 
         public void WriteLine(string message) => _terminal.WriteLine(message);
