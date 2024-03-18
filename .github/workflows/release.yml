@@ -1,10 +1,11 @@
 on:
   release:
     types: [published]
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: default
     steps:
     - uses: actions/checkout@v3
     - name: Set Version Variable
