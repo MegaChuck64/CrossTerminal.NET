@@ -1,18 +1,6 @@
 on:
-  push:
-    branches:
-      - "**"
-    tags: 
-      - "v[0-9]+.[0-9]+.[0-9]+"
-  pull_request:
-    branches:
-      - "**"
-env:
-  VERSION: 1.0.0
-
-defaults:
-  run:
-    working-directory: src
+  release:
+    types: [published]
     
 jobs:
   build:
@@ -27,7 +15,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
