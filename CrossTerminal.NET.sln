@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrossTermLib", "CrossTermLi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CrossTermTester", "CrossTermTester\CrossTermTester.csproj", "{E59A01BB-7A87-42E5-B817-48DDA660CCDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BillAnalyzer", "BillAnalyzer\BillAnalyzer.csproj", "{51A9095C-1463-457F-98B9-DCB4AAC55512}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,14 +31,6 @@ Global
 		{E59A01BB-7A87-42E5-B817-48DDA660CCDF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E59A01BB-7A87-42E5-B817-48DDA660CCDF}.Release|x64.ActiveCfg = Release|x64
 		{E59A01BB-7A87-42E5-B817-48DDA660CCDF}.Release|x64.Build.0 = Release|x64
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Debug|x64.Build.0 = Debug|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Release|Any CPU.Build.0 = Release|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Release|x64.ActiveCfg = Release|Any CPU
-		{51A9095C-1463-457F-98B9-DCB4AAC55512}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
