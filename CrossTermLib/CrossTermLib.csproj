@@ -16,7 +16,6 @@
 		<Description>
 			Cross-Platform Terminal mimicking System.Console functionality. Uses Silk.Net, TrippyGL, and FontStashSharp to open a GUI window. Useful if you want to make a cross platform console app with more control over fonts, sizing, colors ect. Can support high speed character drawing as well.
 		</Description>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
 
   <ItemGroup>
