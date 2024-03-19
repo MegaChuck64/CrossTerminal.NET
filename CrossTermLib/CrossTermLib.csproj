@@ -9,7 +9,6 @@
 
 	<PropertyGroup>
 		<PackageId>CrossTerminal.NET</PackageId>
-		<PackageVersion>v0.0.3-beta</PackageVersion>
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/MegaChuck64/CrossTerminal.NET.git</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/MegaChuck64/CrossTerminal.NET</PackageProjectUrl>
