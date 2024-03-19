@@ -7,10 +7,63 @@ namespace CrossTermTester
     {
         static void Main(string[] args)
         {
+            //RunTerminalGame();
+            RunTerminal();
+        }
+
+        private static void RunTerminalGame()
+        {
+            using var game = new TerminalGame(
+                cols: 80,
+                rows: 40,
+                title: "Terminal Game Test",
+                fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
+                backgroundColor: new Vector4(0f, 0f, 0.5f, 1f),
+                defaultFontColor: new Vector4(0.5f, 0.5f, 0f, 1f),
+                fontSize: 20,
+                paddingPercentage: 1.2f);
+
+            var timer = 0f;
+            var updatePS = 50f;
+            int x = 0;
+            int y = 0;
+            var rand = new Random();
+            game.OnUpdate += (dt) =>
+            {
+                timer += (float)dt;
+
+                if (timer > 1f/ updatePS)
+                {
+                    if (y < game.Cols - 1)
+                    {
+                        timer = 0f;
+                        x++;
+                        if (x > game.Cols - 1)
+                        {
+                            x = 0;
+                            y++;
+                        }
+                        game.PutChar('?', x, y, RandColor(rand));
+                    }
+                }
+            };
+
+            game.Start();
+        }
+
+        private static Vector4 RandColor(Random rand)
+        {
+            return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
+        }
+
+
+
+        private static void RunTerminal()
+        {
             using var terminal = new Terminal(
                 cols: 80,
                 rows: 40,
-                title: "Terminal Game",
+                title: "Terminal Test",
                 fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
                 cursorBlinkSpeed: 0.4f,
                 backgroundColor: new Vector4(0f, 0f, 0f, 1f),
@@ -106,7 +159,7 @@ namespace CrossTermTester
                     if (y > terminal.Rows - 1)
                         break;
                 }
-                Task.Delay((int)((1f/60f)*1000f));
+                Task.Delay((int)((1f / 60f) * 1000f));
 
             } while (!terminal.IsClosing);
 
