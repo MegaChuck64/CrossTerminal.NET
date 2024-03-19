@@ -187,6 +187,21 @@ public class Terminal : IDisposable
         Tick(true);
     }
 
+    public void PutChar(char c, int x, int y)
+    {
+        if (x < 0 || x > Cols - 1 || y < 0 || y > Rows - 1)
+            return;
+
+        _buffer[x, y] = c;
+    }
+
+    public char GetChar(int x, int y)
+    {
+        if (x < 0 || x > Cols - 1 || y < 0 || y > Rows - 1)
+            return ' ';
+
+        return _buffer[x, y];
+    }
     #endregion
 
     #region Window Events
