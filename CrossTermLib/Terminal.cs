@@ -98,8 +98,8 @@ public class Terminal : IDisposable
             {
                 var c = ' ';
 
-                if (x == 0 || y == 0 || x == Cols - 1 || y == Rows - 1)
-                    c = 'W';
+                //if (x == 0 || y == 0 || x == Cols - 1 || y == Rows - 1)
+                //    c = 'W';
 
                 _buffer[x, y] = c;
             }
