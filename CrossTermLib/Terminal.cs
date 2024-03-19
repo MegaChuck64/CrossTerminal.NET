@@ -23,6 +23,7 @@ public class Terminal : IDisposable
     private int _currentCol = 0;
     private int _currentRow = 0;
     private char[,] _buffer;
+    private Vector4[,] _colorBuffer;
 
     private bool _entered = false;
     private bool _loaded = false;
@@ -48,7 +49,7 @@ public class Terminal : IDisposable
     public float CursorBlinkSpeed { get; set; }
     public int FontSize { get; set; }
 
-    public Vector4 FontColor { get; set; }
+    public Vector4 DefaultFontColor { get; set; }
     public Vector4 BackgroundColor { get; set; }
 
     /// <summary>
@@ -61,7 +62,7 @@ public class Terminal : IDisposable
         string fontPath, 
         float cursorBlinkSpeed, 
         Vector4 backgroundColor, 
-        Vector4 fontColor, 
+        Vector4 defaultFontColor, 
         int fontSize,
         float paddingPercentage)
     {
@@ -72,7 +73,7 @@ public class Terminal : IDisposable
 
         CursorBlinkSpeed = cursorBlinkSpeed;
         BackgroundColor = backgroundColor;
-        FontColor = fontColor;
+        DefaultFontColor = defaultFontColor;
         PaddingPercentage = paddingPercentage;
 
         var fontSettings = new FontSystemSettings
@@ -92,16 +93,15 @@ public class Terminal : IDisposable
         PixelHeight = (int)Math.Round(_characterSize.Y * Rows);
 
         _buffer = new char[Cols, Rows];
+        _colorBuffer = new Vector4[Cols, Rows];
         for (int x = 0; x < Cols; x++)
         {
             for (int y = 0; y < Rows; y++)
             {
                 var c = ' ';
-
-                //if (x == 0 || y == 0 || x == Cols - 1 || y == Rows - 1)
-                //    c = 'W';
-
+                var col = new Vector4(1f, 1f, 1f, 1f);
                 _buffer[x, y] = c;
+                _colorBuffer[x,y] = col;
             }
         }
 
@@ -151,13 +151,15 @@ public class Terminal : IDisposable
         }
         return line.Trim();
     }
-    public void WriteLine(string msg)
+    public void WriteLine(string msg, Vector4? color = null)
     {
+        var col = color ?? Vector4.One;
         var ndx = _currentCol;
 
         foreach (var c in msg)
         {
             _buffer[ndx,_currentRow] = c;
+            _colorBuffer[ndx, _currentRow] = col;
             
             ndx++;
 
@@ -180,6 +182,7 @@ public class Terminal : IDisposable
             for (int y = 0; y < Rows; y++)
             {
                 _buffer[x, y] = ' ';
+                _colorBuffer[x, y] = Vector4.One;
             }
         }
         _currentCol = 0;
@@ -187,12 +190,15 @@ public class Terminal : IDisposable
         Tick(true);
     }
 
-    public void PutChar(char c, int x, int y)
+    public void PutChar(char c, int x, int y, Vector4? color = null)
     {
+        var col = color ?? Vector4.One;
+
         if (x < 0 || x > Cols - 1 || y < 0 || y > Rows - 1)
             return;
 
         _buffer[x, y] = c;
+        _colorBuffer[x, y] = col;
     }
 
     public char GetChar(int x, int y)
@@ -201,6 +207,13 @@ public class Terminal : IDisposable
             return ' ';
 
         return _buffer[x, y];
+    }
+    public (char c, Vector4 color) GetCharColor(int x, int y)
+    {
+        if (x < 0 || x > Cols - 1 || y < 0 || y > Rows - 1)
+            return (' ', Vector4.Zero);
+
+        return (_buffer[x,y], _colorBuffer[x,y]);
     }
     #endregion
 
@@ -315,10 +328,10 @@ public class Terminal : IDisposable
             {
                 var xPos = x * _characterSize.X;
                 var yPos = y * _characterSize.Y;
-                font.DrawText(_renderer, _buffer[x, y].ToString(), new Vector2(xPos, yPos), FontColor.ToFS());
+                font.DrawText(_renderer, _buffer[x, y].ToString(), new Vector2(xPos, yPos), _colorBuffer[x,y].ToFS());
                 if (_showCursor && x == _currentCol && y == _currentRow)
                 {                    
-                    font.DrawText(_renderer, "_", new Vector2(xPos, yPos + 2), FontColor.ToFS());
+                    font.DrawText(_renderer, "_", new Vector2(xPos, yPos + 2), _colorBuffer[x, y].ToFS());
                 }
             }
         }

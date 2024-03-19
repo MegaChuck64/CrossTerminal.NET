@@ -7,147 +7,114 @@ namespace CrossTermTester
     {
         static void Main(string[] args)
         {
-#if DEBUG
-            args =
-            [
-                //"c",
-                "t"
-            ];
-#endif
-            if (args.Length == 0)
-                return;
+            using var terminal = new Terminal(
+                cols: 80,
+                rows: 40,
+                title: "Terminal Game",
+                fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
+                cursorBlinkSpeed: 0.4f,
+                backgroundColor: new Vector4(0f, 0f, 0f, 1f),
+                defaultFontColor: new Vector4(1f, 1f, 1f, 1f),
+                fontSize: 20,
+                paddingPercentage: 1.2f);
 
-            if (args.Contains("c"))
-            {
-                RunProgram(new ConsoleWrapper());
-            }
-            
-            if (args.Contains("t"))
-            {
-                (string name, float padding)[] fonts =
-                [
-                    ("Asphalt", 1.05f),     //0
-                    ("SDS_8x8", 1.125f),    //1
-                    ("Ubuntu",  1.1f)       //2
-                ];
-
-                var choice = 0;
-
-                using var term = new TerminalWrapper(
-                    cols: 40,
-                    rows: 20,
-                    title: "My Test Window",
-                    fontPath: Path.Combine("Content", "Fonts", $"{fonts[choice].name}.ttf"),
-                    cursorSpeed: 0.4f,
-                    backgroundColor: new Vector4(0f, 0f, 0f, 1f),
-                    fontColor: new Vector4(1f, 1f, 1f, 1f),
-                    fontSize: 22,
-                    paddingPercentage: fonts[choice].padding);
-
-                RunProgram(term);
-            }
-
-        }
-
-        static void RunProgram(IConsole console)
-        {
-            console.WriteLine("Hello World...");
-            console.WriteLine("--------------");
 
             var invalid = false;
-            string? name;
+            string name;
             do
             {
-                console.Clear();
+                terminal.Clear();
+
+                terminal.WriteLine("Hello World");
+
+                terminal.WriteLine("Enter Name...");
+
                 if (invalid)
-                    console.WriteLine("! Invalid Input !");
+                    terminal.WriteLine("Invalid Input");
 
-                console.WriteLine("Enter Name...");
-                name = console.ReadLine();
+                name = terminal.ReadLine();
+                if (!string.IsNullOrEmpty(name))
+                {
+                    terminal.WriteLine($"You chose '{name}'. Correct? y or n");
 
-                if (string.IsNullOrWhiteSpace(name))
+                    var choice = terminal.ReadLine();
+
+                    if (choice == "y")
+                        break;
+                }
+                else
                 {
                     invalid = true;
-                    continue;
                 }
 
-                console.WriteLine($"You chose '{name}' as your name.");
-                console.WriteLine($"Is this correct? y or n");
-                var choice = console.ReadLine();
+            } while (!terminal.IsClosing);
 
-                if (choice == "y")
+            terminal.Clear();
+
+            terminal.PutChar('H', 0, 0);
+            terminal.PutChar('H', terminal.Cols - 1, 0);
+            terminal.PutChar('H', terminal.Cols - 1, terminal.Rows - 1);
+            terminal.PutChar('H', 0, terminal.Rows - 1);
+
+            var cnt = 0;
+            var updateTimer = 0f;
+            var updatePerSecond = 2f;
+            var rand = new Random();
+            do
+            {
+                terminal.Tick(true);
+                updateTimer += 0.0170f;
+                if (updateTimer > 1f / updatePerSecond)
+                {
+                    updateTimer = 0f;
+                    cnt++;
+                    for (int i = 0; i < terminal.Cols; i++)
+                    {
+                        for (int j = 0; j < terminal.Rows; j++)
+                        {
+                            var col = new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
+                            var num = rand.Next(0, 26); // Zero to 25
+                            var c = (char)('A' + num);
+                            terminal.PutChar(c, i, j, col);
+                        }
+                    }
+                }
+                Task.Delay(170);
+
+                if (cnt > 10)
                     break;
 
-                invalid = true;
+            } while (!terminal.IsClosing);
 
-            } while (true);
-
-            console.WriteLine($"Welcome, {name}");
-            console.WriteLine("Press enter to exit...");
-            console.ReadLine();
-        }
-
-    }
-
-    internal interface IConsole
-    {        
-        void WriteLine(string message);
-        string? ReadLine();
-        void Clear();
-        bool IsClosing { get; }
-    }
-
-    internal class ConsoleWrapper : IConsole
-    {
-        public void WriteLine(string message) => Console.WriteLine(message);        
-        public string? ReadLine() => Console.ReadLine();
-        public void Clear() => Console.Clear();
-        public bool IsClosing => false;
-    }
-
-    internal class TerminalWrapper : IConsole, IDisposable
-    {
-        private readonly Terminal _terminal;
-        private bool disposedValue;
-        public TerminalWrapper(
-            int cols,
-            int rows,
-            string title,
-            string fontPath,
-            float cursorSpeed,
-            Vector4 backgroundColor,
-            Vector4 fontColor,
-            int fontSize,
-            float paddingPercentage)
-        {
-            _terminal = new(cols, rows, title, fontPath, cursorSpeed, backgroundColor, fontColor, fontSize, paddingPercentage);
-        }
-
-        public void WriteLine(string message) => _terminal.WriteLine(message);
-        public string? ReadLine() => _terminal.ReadLine();
-        public void Clear() => _terminal.Clear();
-        public bool IsClosing => _terminal.IsClosing;
-        public void Tick() => _terminal.Tick(true);
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            var y = 0;
+            updatePerSecond = 3f;
+            do
             {
-                if (disposing)
+                terminal.Tick(true);
+                updateTimer += (1f / 60f);
+                if (updateTimer > 1f / updatePerSecond)
                 {
-                    _terminal.Dispose();
+                    updateTimer = 0f;
+                    for (int i = 0; i < terminal.Cols; i++)
+                    {
+                        var col = new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
+                        var num = rand.Next(0, 26); // Zero to 25
+                        var c = (char)('A' + num);
+                        terminal.PutChar(c, i, y, col);
+                    }
+                    y++;
+                    if (y > terminal.Rows - 1)
+                        break;
                 }
+                Task.Delay((int)((1f/60f)*1000f));
 
-                disposedValue = true;
-            }
+            } while (!terminal.IsClosing);
+
+            terminal.WriteLine($"Goodbye {name}. Press Enter to Exit...");
+
+            terminal.ReadLine();
+
         }
 
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
     }
-
 }
