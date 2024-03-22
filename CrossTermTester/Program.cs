@@ -8,7 +8,8 @@ namespace CrossTermTester
         static void Main(string[] args)
         {
             //RunTerminalGame();
-            RunTerminal();
+            //RunTerminal();
+            RunTerminal2();
         }
 
         private static void RunTerminalGame()
@@ -56,7 +57,33 @@ namespace CrossTermTester
             return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
         }
 
+        private static void RunTerminal2()
+        {
+            using var terminal = new Terminal2(
+                cols: 40,
+                rows: 20,
+                fontPath: Path.Combine("Content","Fonts", "Ubuntu.ttf"),
+                fontSize: 20,
+                title: "Hollow World 2",
+                cursorBlinkSpeed: 0.4f,
+                paddingPercentage: 1.25f,
+                defaultFontColor: Vector4.One,
+                defaultBackgroundColor: new Vector4(0f, 0f, 0f, 1f));
 
+            terminal.WriteLine(new StringInfo("Hello, please enter name",
+            [
+                new Vector4(0.2f, 0.4f, 0.6f, 1f)
+            ]));
+
+            var name = terminal.ReadLine();
+
+            terminal.WriteLine(new StringInfo($"Welcome, {name.Text}. Press enter to exit...",
+            [
+                new Vector4(0.2f, 0.4f, 0.6f, 1f)
+            ]));
+
+            terminal.ReadLine();
+        }
 
         private static void RunTerminal()
         {
