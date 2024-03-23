@@ -9,7 +9,54 @@ namespace CrossTermTester
         {
             //RunTerminalGame();
             //RunTerminal();
-            RunTerminal2();
+            RunConsoleGL();
+        }
+
+
+        private static void RunConsoleGL()
+        {
+            using var console = new ConsoleGL(
+                cols: 60,
+                rows: 30,
+                fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
+                fontSize: 18,
+                title: "Hollow World",
+                defaultFontColor: new Vector4(0f, 1f, 0f, 1f));
+
+
+            string name;
+            do
+            {
+                console.Clear();
+                console.WriteLine("Hi... please enter your name");
+                name = console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
+
+                console.WriteLine($"You chose '{name}', is that correct? y or n");
+
+                if (console.ReadLine() == "y")
+                    break;
+
+            } while (!console.IsClosing);
+
+            console.WriteLine($"Welcome, {name}. Press enter to exit...");
+
+            console.ReadLine();
+
+            (var cols, var rows) = console.GetWindowSize();
+            var rand = new Random();
+            var message = "? ? ? ? hello world ? ? ? ?";
+
+            console.SetCursorPosition((cols / 2) - (message.Length / 2), (rows / 2));
+
+            foreach (var ch in message)
+            {
+                console.Write(ch, RandColor(rand));
+            }
+
+            console.ReadLine();
         }
 
         private static void RunTerminalGame()
@@ -55,34 +102,6 @@ namespace CrossTermTester
         private static Vector4 RandColor(Random rand)
         {
             return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
-        }
-
-        private static void RunTerminal2()
-        {
-            using var terminal = new Terminal2(
-                cols: 40,
-                rows: 20,
-                fontPath: Path.Combine("Content","Fonts", "Ubuntu.ttf"),
-                fontSize: 20,
-                title: "Hollow World 2",
-                cursorBlinkSpeed: 0.4f,
-                paddingPercentage: 1.25f,
-                defaultFontColor: Vector4.One,
-                defaultBackgroundColor: new Vector4(0f, 0f, 0f, 1f));
-
-            terminal.WriteLine(new StringInfo("Hello, please enter name",
-            [
-                new Vector4(0.2f, 0.4f, 0.6f, 1f)
-            ]));
-
-            var name = terminal.ReadLine();
-
-            terminal.WriteLine(new StringInfo($"Welcome, {name.Text}. Press enter to exit...",
-            [
-                new Vector4(0.2f, 0.4f, 0.6f, 1f)
-            ]));
-
-            terminal.ReadLine();
         }
 
         private static void RunTerminal()

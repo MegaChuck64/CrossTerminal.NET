@@ -2,39 +2,31 @@
 using FontStashSharp;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.SDL;
 using Silk.NET.Windowing;
-using System.Drawing;
+using System.Diagnostics.Contracts;
 using System.Numerics;
+
 namespace CrossTermLib;
 
-public interface IConsole
-{
-    public void Write(char c);
-    public void Write(string text);
-    public void WriteLine(string text);
+//public interface IConsole
+//{
+//    public void Write(char c);
+//    public void Write(string text);
+//    public void WriteLine(string text);
 
-    public void Write(CharInfo c);
-    public void Write(StringInfo text);
-    public void WriteLine(StringInfo text);
+//    public string ReadLine();
+//    public char Read();
+//    public void Clear();
 
-    public string ReadLine();
-    public char Read();
+//    public (int x, int y) GetCursorPosition();
+//    public void SetCursorPosition(int x, int y);
 
-    public StringInfo ReadLineInfo();
-    public CharInfo ReadCharInfo();
+//    public void SetWindowPosition(int x, int y);
+//    public void SetWindowSize(int w, int h);
 
-    public void Clear();
-
-    public (int x, int y) GetCursorPosition();
-    public void SetCursorPosition(int x, int y);
-
-    public void SetWindowPosition(int x, int y);
-    public void SetWindowSize(int w, int h);
-
-    public void SetBufferPosition(int x, int y);
-    public void SetBufferSize(int w, int h);
-}
+//    public void SetBufferPosition(int x, int y);
+//    public void SetBufferSize(int w, int h);
+//}
 
 public struct CharInfo(char c, Vector4? color = null)
 {
@@ -78,7 +70,7 @@ public struct StringInfo
 }
 
 
-public class Terminal2 : IDisposable
+internal class ColorTerminal : IDisposable
 {
     private bool disposedValue;
 
@@ -88,8 +80,7 @@ public class Terminal2 : IDisposable
 
     private char[,] _buffer;
     private Vector4[,] _colorBuffer;
-    private int _currentCol = 0;
-    private int _currentRow = 0;
+   
     private bool _entered = false;
     private bool _isDebugging = false;
     private float _cursorTimer = 0f;
@@ -97,16 +88,42 @@ public class Terminal2 : IDisposable
 
     public int Cols { get; private set; }
     public int Rows { get; private set; }
-    public int PixelWidth => _core.CoreWindow.Size.X;
-    public int PixelHeight => _core.CoreWindow.Size.Y;
     public string Title { get; private set; }
-    public float CursorBlinkRate { get; private set; }
     public float PaddingPercentage { get; private set; }
     public float FontSize { get; private set; }
-    public Vector4 DefaultFontColor { get; private set; }
-    public Vector4 DefaultBackgroundColor { get; private set; }
 
-    public Terminal2(int cols, int rows, string fontPath, int fontSize, string title, float cursorBlinkSpeed, float paddingPercentage, Vector4 defaultFontColor, Vector4 defaultBackgroundColor)
+    public int CurrentCol 
+    {
+        get { return _currentCol; }
+        set 
+        {
+            if (value < Cols - 1)
+                _currentCol = value;
+        }
+    }
+    public int CurrentRow
+    {
+        get { return _currentRow; }
+        set
+        {
+            if (value < Rows - 1)
+                _currentRow = value;
+        }
+    }
+
+    private int _currentCol;
+    private int _currentRow;
+    public int PixelWidth => _core.CoreWindow.Size.X;
+    public int PixelHeight => _core.CoreWindow.Size.Y;
+
+    public bool IsClosing => _core.IsClosing;
+
+    public Vector4 DefaultFontColor { get; set; }
+    public Vector4 BackgroundColor { get; set; }
+    public float CursorBlinkRate { get; set; }
+
+
+    public ColorTerminal(int cols, int rows, string fontPath, int fontSize, string title, float cursorBlinkSpeed, float paddingPercentage, Vector4 defaultFontColor, Vector4 backgroundColor)
     {
         Cols = cols;
         Rows = rows;
@@ -115,7 +132,7 @@ public class Terminal2 : IDisposable
         Title = title;
         FontSize = fontSize;
         DefaultFontColor = defaultFontColor;
-        DefaultBackgroundColor = defaultBackgroundColor;
+        BackgroundColor = backgroundColor;
 
         var fontSettings = new FontSystemSettings
         {
@@ -149,6 +166,7 @@ public class Terminal2 : IDisposable
         _core.KeyDown += _core_KeyDown;
     }
 
+    #region Events 
     private void _core_KeyDown(Key key)
     {
         if (key == Key.Enter)
@@ -163,17 +181,17 @@ public class Terminal2 : IDisposable
         else if (key == Key.Backspace)
         {
             //this is kind of weird behavior... ?
-            if (_currentCol == Cols - 1 && _buffer[_currentCol, _currentRow] != ' ')
+            if (CurrentCol == Cols - 1 && _buffer[CurrentCol, CurrentRow] != ' ')
             {
-                _buffer[_currentCol, _currentRow] = ' ';
+                _buffer[CurrentCol, CurrentRow] = ' ';
             }
             else
             {
 
-                if (_currentCol > 0)
+                if (CurrentCol > 0)
                     _currentCol--;
 
-                _buffer[_currentCol, _currentRow] = ' ';
+                _buffer[CurrentCol, CurrentRow] = ' ';
             }
         }
 
@@ -182,8 +200,8 @@ public class Terminal2 : IDisposable
 
     private void _core_CharKeyDown(char c)
     {
-        _buffer[_currentCol, _currentRow] = c;
-        if (_currentCol < Cols - 1)
+        _buffer[CurrentCol, CurrentRow] = c;
+        if (CurrentCol < Cols - 1)
             _currentCol++;
 
         _core.CoreWindow.DoRender();
@@ -191,7 +209,7 @@ public class Terminal2 : IDisposable
 
     private void _core_Render(float dt)
     {
-        _core.ClearWindow(DefaultBackgroundColor);
+        _core.ClearWindow(BackgroundColor);
 
        _core.CoreRenderer.Begin();
 
@@ -206,6 +224,8 @@ public class Terminal2 : IDisposable
 
         _core.CoreRenderer.End();
     }
+
+    #endregion
 
     #region Drawing
 
@@ -224,7 +244,7 @@ public class Terminal2 : IDisposable
                 var xPos = x * _characterSize.X;
                 var yPos = y * _characterSize.Y;
                 font.DrawText(_core.CoreRenderer, _buffer[x, y].ToString(), new Vector2(xPos, yPos), _colorBuffer[x, y].ToFS());
-                if (_showCursor && x == _currentCol && y == _currentRow)
+                if (_showCursor && x == CurrentCol && y == CurrentRow)
                 {
                     font.DrawText(_core.CoreRenderer, "_", new Vector2(xPos, yPos + 2), _colorBuffer[x, y].ToFS());
                 }
@@ -244,6 +264,7 @@ public class Terminal2 : IDisposable
     }
     #endregion
 
+    #region Commands 
     public void Clear()
     {
         var spc = ' ';
@@ -255,8 +276,8 @@ public class Terminal2 : IDisposable
                 _colorBuffer[x, y] = DefaultFontColor;
             }
         }
-        _currentCol = 0;
-        _currentRow = 0;
+        CurrentCol = 0;
+        CurrentRow = 0;
     }
 
     public void AdvanceCursor()
@@ -276,12 +297,13 @@ public class Terminal2 : IDisposable
 
     public CharInfo ReadChar()
     {
-        var c = _buffer[_currentCol, _currentRow];
-        var col = _colorBuffer[_currentCol, _currentRow];
+        var c = _buffer[CurrentCol, CurrentRow];
+        var col = _colorBuffer[CurrentCol, CurrentRow];
         AdvanceCursor();
 
         return new CharInfo(c, col);
     }
+    
     public StringInfo ReadLine()
     {
         while (!_entered && !_core.IsClosing)
@@ -295,8 +317,8 @@ public class Terminal2 : IDisposable
         var cols = new List<Vector4>();
         for (int i = 0; i < Cols; i++)
         {
-            line += _buffer[i, _currentRow - 1];
-            cols.Add(_colorBuffer[i, _currentRow - 1]);
+            line += _buffer[i, CurrentRow - 1];
+            cols.Add(_colorBuffer[i, CurrentRow - 1]);
         }
         line = line.TrimEnd();
 
@@ -305,8 +327,8 @@ public class Terminal2 : IDisposable
 
     public void Write(CharInfo c)
     {
-        _buffer[_currentCol, _currentCol] = c.C;
-        _colorBuffer[_currentCol, _currentRow] = c.Color;
+        _buffer[CurrentCol, CurrentRow] = c.C;
+        _colorBuffer[CurrentCol, CurrentRow] = c.Color;
 
         AdvanceCursor();
     }
@@ -359,7 +381,7 @@ public class Terminal2 : IDisposable
         _core.CoreWindow.DoRender();
     }
 
-
+    #endregion
 
     protected virtual void Dispose(bool disposing)
     {
