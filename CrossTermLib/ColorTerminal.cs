@@ -344,6 +344,7 @@ internal class ColorTerminal : IDisposable
 
             _buffer[ndx, _currentRow] = c;
             _colorBuffer[ndx, _currentRow] = col;
+            AdvanceCursor();
 
             ndx++;
             //todo: wrapping vs. cutoff? whats the word 
@@ -351,7 +352,6 @@ internal class ColorTerminal : IDisposable
                 break;
         }
 
-        AdvanceCursor();
     }
 
     public void WriteLine(StringInfo msg)

@@ -23,7 +23,10 @@ namespace CrossTermTester
                 title: "Hollow World",
                 defaultFontColor: new Vector4(0f, 1f, 0f, 1f));
 
-
+            console.Write("-------------");
+            console.Write("hollow world");
+            console.Write("-------------");
+            console.ReadLine();
             string name;
             do
             {
