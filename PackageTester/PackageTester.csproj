@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CrossTerminal.NET" Version="0.0.12-beta" />
+    <PackageReference Include="CrossTerminal.NET" Version="0.0.13-beta" />
   </ItemGroup>
 
 </Project>
