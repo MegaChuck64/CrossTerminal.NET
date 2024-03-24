@@ -1,5 +1,4 @@
 ﻿using CrossTermLib;
-using System;
 using System.Numerics;
 
 namespace PackageTester
@@ -85,7 +84,7 @@ namespace PackageTester
                 console.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
                 console.WriteLine("1. play");
                 console.WriteLine("2. leaderboard");
-                console.WriteLine("3. settings");
+                console.WriteLine("3. login");
 
                 var choice = console.ReadLine();
                 
@@ -99,8 +98,10 @@ namespace PackageTester
                 }
                 else if (choice == "3")
                 {
-                    scene = "settings";
+                    scene = "login";
+                    break;
                 }
+
 
             } while (!console.IsClosing);
 

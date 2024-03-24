@@ -172,6 +172,8 @@ internal class ColorTerminal : IDisposable
     {
         if (key == Key.Enter)
         {
+            _showCursor = false;
+            _cursorTimer = 0f;
             WriteLine(new StringInfo(string.Empty));
             _entered = true;
         }
