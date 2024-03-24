@@ -30,6 +30,7 @@ namespace PackageTester
                 currentScene = scenes[currentScene].Run(console);
             } while (currentScene != "exit");
 
+            console.WriteLine("Press enter to exit...");
             console.ReadLine();
 
         }
@@ -83,8 +84,8 @@ namespace PackageTester
                 console.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
                 console.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
                 console.WriteLine("1. play");
-                console.WriteLine("2. leaderboard");
-                console.WriteLine("3. login");
+                console.WriteLine("2. login");
+                console.WriteLine("3. exit");
 
                 var choice = console.ReadLine();
                 
@@ -94,11 +95,12 @@ namespace PackageTester
                 }
                 else if (choice == "2")
                 {
-                    scene = "leaderboard";
+                    scene = "login";
+                    break;
                 }
                 else if (choice == "3")
                 {
-                    scene = "login";
+                    scene = "exit";
                     break;
                 }
 

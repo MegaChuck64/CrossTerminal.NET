@@ -3,7 +3,6 @@ using FontStashSharp;
 using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using System.Diagnostics.Contracts;
 using System.Numerics;
 
 namespace CrossTermLib;
@@ -55,9 +54,10 @@ public struct StringInfo
             //if not enough colors given, just fill the rest with white
             Colors = new Vector4[text.Length];
             colors.CopyTo(Colors, 0);
-            for (int i = colors.Length - 1; i < text.Length; i++)
+            var firstCol = colors[0];
+            for (int i = colors.Length; i < text.Length; i++)
             {
-                Colors[i] = Vector4.One;
+                Colors[i] = firstCol;
             }
         }
         else
