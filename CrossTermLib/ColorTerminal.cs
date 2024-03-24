@@ -156,7 +156,8 @@ internal class ColorTerminal : IDisposable
             IsEventDriven = true,
             Size = new Vector2D<int>((int)Math.Round(_characterSize.X * Cols), (int)Math.Round(_characterSize.Y * Rows)),
             Title = title,
-            WindowBorder = WindowBorder.Fixed
+            WindowBorder = WindowBorder.Fixed,
+            
         };
 
         _core = new TerminalCore(options);
@@ -195,7 +196,7 @@ internal class ColorTerminal : IDisposable
             }
         }
 
-        _core.CoreWindow.DoRender();
+        Tick();
     }
 
     private void _core_CharKeyDown(char c)
@@ -204,7 +205,7 @@ internal class ColorTerminal : IDisposable
         if (CurrentCol < Cols - 1)
             _currentCol++;
 
-        _core.CoreWindow.DoRender();
+        Tick();
     }
 
     private void _core_Render(float dt)
@@ -265,6 +266,8 @@ internal class ColorTerminal : IDisposable
     #endregion
 
     #region Commands 
+
+    public void Tick() => _core.Tick();
     public void Clear()
     {
         var spc = ' ';
@@ -308,7 +311,7 @@ internal class ColorTerminal : IDisposable
     {
         while (!_entered && !_core.IsClosing)
         {
-            _core.Tick(true);
+            Tick();
         }
 
         _entered = false;
@@ -350,8 +353,7 @@ internal class ColorTerminal : IDisposable
             //todo: wrapping vs. cutoff? whats the word 
             if (ndx > Cols - 1)
                 break;
-        }
-
+        }                
     }
 
     public void WriteLine(StringInfo msg)
@@ -377,8 +379,6 @@ internal class ColorTerminal : IDisposable
         if (_currentRow > Rows - 1)
             _currentRow = Rows - 1;
 
-
-        _core.CoreWindow.DoRender();
     }
 
     #endregion

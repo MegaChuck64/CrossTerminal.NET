@@ -59,6 +59,35 @@ namespace CrossTermTester
                 console.Write(ch, RandColor(rand));
             }
 
+            string scene;
+            do
+            {
+                console.Clear();
+
+                console.Write("------- ", new Vector4(1f, 0f, 0.2f, 1f));
+                console.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
+                console.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
+                console.WriteLine("1. play");
+                console.WriteLine("2. leaderboard");
+                console.WriteLine("3. settings");
+
+                var choice = console.ReadLine();
+
+                if (choice == "1")
+                {
+                    scene = "play";
+                }
+                else if (choice == "2")
+                {
+                    scene = "leaderboard";
+                }
+                else if (choice == "3")
+                {
+                    scene = "settings";
+                }
+
+            } while (!console.IsClosing);
+
             console.ReadLine();
         }
 

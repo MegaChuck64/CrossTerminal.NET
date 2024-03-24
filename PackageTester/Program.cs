@@ -78,6 +78,8 @@ namespace PackageTester
             string scene = "exit";
             do
             {
+                console.Clear();
+
                 console.Write("------- ", new Vector4(1f, 0f, 0.2f,1f));
                 console.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
                 console.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
