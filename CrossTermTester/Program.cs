@@ -8,7 +8,55 @@ namespace CrossTermTester
         static void Main(string[] args)
         {
             //RunTerminalGame();
-            RunTerminal();
+            //RunTerminal();
+            RunConsoleGL();
+        }
+
+
+        private static void RunConsoleGL()
+        {
+            using var console = new ConsoleGL(
+                cols: 60,
+                rows: 30,
+                fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
+                fontSize: 18,
+                title: "Hollow World",
+                defaultFontColor: new Vector4(0f, 1f, 0f, 1f));
+
+
+            string name;
+            do
+            {
+                console.Clear();
+                console.WriteLine("Hi... please enter your name");
+                name = console.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(name))
+                    continue;
+
+                console.WriteLine($"You chose '{name}', is that correct? y or n");
+
+                if (console.ReadLine() == "y")
+                    break;
+
+            } while (!console.IsClosing);
+
+            console.WriteLine($"Welcome, {name}. Press enter to exit...");
+
+            console.ReadLine();
+
+            (var cols, var rows) = console.GetWindowSize();
+            var rand = new Random();
+            var message = "? ? ? ? hello world ? ? ? ?";
+
+            console.SetCursorPosition((cols / 2) - (message.Length / 2), (rows / 2));
+
+            foreach (var ch in message)
+            {
+                console.Write(ch, RandColor(rand));
+            }
+
+            console.ReadLine();
         }
 
         private static void RunTerminalGame()
@@ -55,8 +103,6 @@ namespace CrossTermTester
         {
             return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
         }
-
-
 
         private static void RunTerminal()
         {
