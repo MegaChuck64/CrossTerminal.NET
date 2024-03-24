@@ -16,6 +16,8 @@ internal class TerminalCore : IDisposable
     public GraphicsDevice CoreGraphicsDevice { get; private set; } = null!;
     public IInputContext CoreInput { get; private set; } = null!;
     public IWindow CoreWindow { get; private set; }
+    public static Vector4 DefaultFontColor { get; set; }
+
     public bool IsClosing { get; private set; }
     public bool IsLoaded { get; private set; }
 

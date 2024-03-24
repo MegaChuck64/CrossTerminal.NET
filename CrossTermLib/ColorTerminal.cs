@@ -30,7 +30,7 @@ namespace CrossTermLib;
 public struct CharInfo(char c, Vector4? color = null)
 {
     public char C { get; set; } = c;
-    public Vector4 Color { get; set; } = color ?? Vector4.One;
+    public Vector4 Color { get; set; } = color ?? TerminalCore.DefaultFontColor;
 }
 
 public struct StringInfo
@@ -46,7 +46,7 @@ public struct StringInfo
 
             for (int i = 0; i < text.Length; i++)
             {
-                Colors[i] = Vector4.One;
+                Colors[i] = TerminalCore.DefaultFontColor;
             }
         }
         else if (colors.Length < text.Length)
@@ -92,6 +92,8 @@ internal class ColorTerminal : IDisposable
     public float PaddingPercentage { get; private set; }
     public float FontSize { get; private set; }
 
+    private int _currentCol;
+    private int _currentRow;
     public int CurrentCol 
     {
         get { return _currentCol; }
@@ -111,14 +113,12 @@ internal class ColorTerminal : IDisposable
         }
     }
 
-    private int _currentCol;
-    private int _currentRow;
     public int PixelWidth => _core.CoreWindow.Size.X;
     public int PixelHeight => _core.CoreWindow.Size.Y;
 
     public bool IsClosing => _core.IsClosing;
 
-    public Vector4 DefaultFontColor { get; set; }
+
     public Vector4 BackgroundColor { get; set; }
     public float CursorBlinkRate { get; set; }
 
@@ -130,9 +130,10 @@ internal class ColorTerminal : IDisposable
         CursorBlinkRate = cursorBlinkSpeed;
         PaddingPercentage = paddingPercentage;
         Title = title;
-        FontSize = fontSize;
-        DefaultFontColor = defaultFontColor;
+        FontSize = fontSize;        
         BackgroundColor = backgroundColor;
+
+        TerminalCore.DefaultFontColor = defaultFontColor;
 
         var fontSettings = new FontSystemSettings
         {
@@ -278,7 +279,7 @@ internal class ColorTerminal : IDisposable
             for (int y = 0; y < Rows; y++)
             {
                 _buffer[x, y] = spc;
-                _colorBuffer[x, y] = DefaultFontColor;
+                _colorBuffer[x, y] = TerminalCore.DefaultFontColor;
             }
         }
         CurrentCol = 0;
