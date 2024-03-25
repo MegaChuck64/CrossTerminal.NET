@@ -85,7 +85,10 @@ namespace CrossTermTester
                     scene = "settings";
                 }
 
+                terminal.ReadLine();
+
             } while (!terminal.IsClosing);
+
 
             terminal.ReadLine();
         }

@@ -34,11 +34,11 @@ public class Terminal(int cols, int rows, string fontPath, int fontSize, string 
     public string ReadLine() =>
         _colorTerminal.ReadLine().Text;
 
-    public char Read()
-    {
-        var res = _colorTerminal.ReadChar();
-        return res.C;
-    }
+    //public char Read()
+    //{
+    //    var res = _colorTerminal.ReadChar();
+    //    return res.C;
+    //}
 
     public void Clear() =>
         _colorTerminal.Clear();

@@ -123,6 +123,9 @@ internal class ColorTerminal : IDisposable
         }
         else if (key == Key.Backspace)
         {
+            _showCursor = true;
+            _cursorTimer = 0f;
+
             //this is kind of weird behavior... ?
             if (CurrentCol == Cols - 1 && _buffer[CurrentCol, CurrentRow] != ' ')
             {
@@ -143,6 +146,12 @@ internal class ColorTerminal : IDisposable
 
     private void _core_CharKeyDown(char c)
     {
+        _showCursor = true;
+        _cursorTimer = 0f;
+
+        if (c == '`')
+            return;
+
         _buffer[CurrentCol, CurrentRow] = c;
         if (CurrentCol < Cols - 1)
             _currentCol++;
@@ -240,14 +249,21 @@ internal class ColorTerminal : IDisposable
         }
     }
 
-    public CharInfo ReadChar()
-    {
-        var c = _buffer[CurrentCol, CurrentRow];
-        var col = _colorBuffer[CurrentCol, CurrentRow];
-        AdvanceCursor();
+    //public CharInfo ReadChar()
+    //{
+    //    while(!_entered && !_core.IsClosing)
+    //    {
+    //        Tick();
+    //    }
 
-        return new CharInfo(c, col);
-    }
+    //    _entered = false;
+
+    //    var c = _buffer[CurrentCol, CurrentRow];
+    //    var col = _colorBuffer[CurrentCol, CurrentRow];
+    //    AdvanceCursor();
+
+    //    return new CharInfo(c, col);
+    //}
     
     public StringInfo ReadLine()
     {

@@ -7,7 +7,7 @@ namespace PackageTester
     {
         static void Main(string[] args)
         {
-            using var console = new ConsoleGL(
+            using var console = new Terminal(
                  cols: 60,
                  rows: 30,
                  fontPath: "Ubuntu.ttf",
@@ -42,7 +42,7 @@ namespace PackageTester
     }
     internal class LoginScene : Scene
     {
-        public override string Run(ConsoleGL console)
+        public override string Run(Terminal console)
         {
             string name;
             do
@@ -73,7 +73,7 @@ namespace PackageTester
 
     internal class MenuScene : Scene
     {
-        public override string Run(ConsoleGL console)
+        public override string Run(Terminal console)
         {
             string scene = "exit";
             do
@@ -117,6 +117,6 @@ namespace PackageTester
         /// Runs until should run next scene or 'exit' to close game. Next scene's name is returned
         /// </summary>
         /// <returns></returns>
-        public abstract string Run(ConsoleGL console);
+        public abstract string Run(Terminal console);
     }
 }
