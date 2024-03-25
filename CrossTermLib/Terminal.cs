@@ -40,6 +40,7 @@ public class Terminal(int cols, int rows, string fontPath, int fontSize, string 
     //    return res.C;
     //}
 
+    public void Refresh() => _colorTerminal.Tick();
     public void Clear() =>
         _colorTerminal.Clear();
 

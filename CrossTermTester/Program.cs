@@ -87,6 +87,28 @@ namespace CrossTermTester
 
                 terminal.ReadLine();
 
+                terminal.Clear();
+
+                var size = terminal.GetWindowSize();
+
+                for (int i = 0; i < 500; i++)
+                {
+                    for (int x = 0; x < size.x; x++)
+                    {
+                        for (int y = 0; y < size.y; y++)
+                        {
+                            terminal.SetCursorPosition(x, y);
+                            terminal.Write(RandChar(rand), RandColor(rand));
+                        }
+                    }
+
+                    terminal.Refresh();
+
+                    Task.Delay(10);
+                }
+
+                terminal.ReadLine();
+
             } while (!terminal.IsClosing);
 
 
@@ -97,6 +119,10 @@ namespace CrossTermTester
         {
             return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
         }
+
+        private static readonly string charOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()?><;':{}[]_+-=~`";
+
+        private static char RandChar(Random rand) => charOptions[rand.Next(charOptions.Length)];
 
     }
 }

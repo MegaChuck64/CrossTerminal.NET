@@ -3,11 +3,12 @@ using System.Numerics;
 
 namespace PackageTester
 {
+
     internal class Program
     {
         static void Main(string[] args)
         {
-            using var console = new Terminal(
+            using var terminal = new Terminal(
                  cols: 60,
                  rows: 30,
                  fontPath: "Ubuntu.ttf",
@@ -26,14 +27,44 @@ namespace PackageTester
 
             do
             {
-                console.Clear();
-                currentScene = scenes[currentScene].Run(console);
+                terminal.Clear();
+                currentScene = scenes[currentScene].Run(terminal);
             } while (currentScene != "exit");
 
-            console.WriteLine("Press enter to exit...");
-            console.ReadLine();
+            terminal.WriteLine("Press enter to exit...");
+
+            terminal.ReadLine();
+
+            terminal.Clear();
+
+            var rand = new Random();
+            var size = terminal.GetWindowSize();
+
+            for (int i = 0; i < 5; i++)
+            {
+                for (int x = 0; x < size.x; x++)
+                {
+                    for (int y = 0; y < size.y; y++)
+                    {
+                        terminal.SetCursorPosition(x, y);
+                        terminal.Write(RandChar(rand), RandColor(rand));
+                    }
+                }
+
+            }
+
+            terminal.ReadLine();
 
         }
+
+        private static Vector4 RandColor(Random rand)
+        {
+            return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
+        }
+
+        private static readonly string charOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()?><;':{}[]_+-=~`";
+
+        private static char RandChar(Random rand) => charOptions[rand.Next(charOptions.Length)];
     }
 
     internal static class GameMemory
@@ -42,52 +73,52 @@ namespace PackageTester
     }
     internal class LoginScene : Scene
     {
-        public override string Run(Terminal console)
+        public override string Run(Terminal terminal)
         {
             string name;
             do
             {
-                console.Clear();
+                terminal.Clear();
 
-                console.WriteLine("Hello world...");
-                console.WriteLine("Please type your name...");
+                terminal.WriteLine("Hello world...");
+                terminal.WriteLine("Please type your name...");
 
-                name = console.ReadLine();
+                name = terminal.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(name))
                     continue;
 
-                console.WriteLine($"You entered '{name}'. Keep? y or n");
-                if (console.ReadLine() == "y")
+                terminal.WriteLine($"You entered '{name}'. Keep? y or n");
+                if (terminal.ReadLine() == "y")
                     break;
 
-            } while (!console.IsClosing);
+            } while (!terminal.IsClosing);
 
-            console.WriteLine($"Welcome, {name}. Press enter to start...");
+            terminal.WriteLine($"Welcome, {name}. Press enter to start...");
 
             GameMemory.Name = name;
 
-            return console.IsClosing ? "exit" : "menu";
+            return terminal.IsClosing ? "exit" : "menu";
         }
     }
 
     internal class MenuScene : Scene
     {
-        public override string Run(Terminal console)
+        public override string Run(Terminal terminal)
         {
             string scene = "exit";
             do
             {
-                console.Clear();
+                terminal.Clear();
 
-                console.Write("------- ", new Vector4(1f, 0f, 0.2f,1f));
-                console.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
-                console.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
-                console.WriteLine("1. play");
-                console.WriteLine("2. login");
-                console.WriteLine("3. exit");
+                terminal.Write("------- ", new Vector4(1f, 0f, 0.2f,1f));
+                terminal.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
+                terminal.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
+                terminal.WriteLine("1. play");
+                terminal.WriteLine("2. login");
+                terminal.WriteLine("3. exit");
 
-                var choice = console.ReadLine();
+                var choice = terminal.ReadLine();
                 
                 if (choice == "1")
                 {
@@ -105,10 +136,12 @@ namespace PackageTester
                 }
 
 
-            } while (!console.IsClosing);
+            } while (!terminal.IsClosing);
 
             return scene;
         }
+
+
     }
 
     internal abstract class Scene
@@ -117,6 +150,6 @@ namespace PackageTester
         /// Runs until should run next scene or 'exit' to close game. Next scene's name is returned
         /// </summary>
         /// <returns></returns>
-        public abstract string Run(Terminal console);
+        public abstract string Run(Terminal terminal);
     }
 }
