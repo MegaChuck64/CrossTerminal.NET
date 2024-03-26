@@ -40,7 +40,7 @@ namespace PackageTester
             var rand = new Random();
             var size = terminal.GetWindowSize();
 
-            for (int i = 0; i < 200; i++)
+            for (int i = 0; i < 20; i++)
             {
                 for (int x = 0; x < size.x; x++)
                 {
@@ -53,8 +53,19 @@ namespace PackageTester
 
                 terminal.Refresh();
 
+                if (i % 2 == 0)
+                    terminal.SetWindowSize(40, 20);
+                else
+                    terminal.SetWindowSize(60, 30);
+
+                Task.Delay(100).Wait();
             }
 
+            terminal.Clear();
+            var windowSize = terminal.GetWindowSize();
+            var msg = "Press enter to exit...";
+            terminal.SetCursorPosition((windowSize.x / 2) - (msg.Length/2), (windowSize.y/2));
+            terminal.WriteLine(msg, RandColor(rand));
             terminal.ReadLine();
 
         }
