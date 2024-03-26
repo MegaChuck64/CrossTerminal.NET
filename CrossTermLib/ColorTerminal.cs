@@ -94,7 +94,7 @@ internal class ColorTerminal : IDisposable
         var options = WindowOptions.Default with
         {
             IsEventDriven = true,
-            Size = new Vector2D<int>((int)Math.Round(_characterSize.X * Cols), (int)Math.Round(_characterSize.Y * Rows)),
+            Size = CalculateWindowSize,
             Title = title,
             WindowBorder = WindowBorder.Fixed,
             
@@ -106,6 +106,8 @@ internal class ColorTerminal : IDisposable
         _core.CharKeyDown += _core_CharKeyDown;
         _core.KeyDown += _core_KeyDown;
     }
+
+    private Vector2D<int> CalculateWindowSize => new((int)Math.Round(_characterSize.X * Cols), (int)Math.Round(_characterSize.Y * Rows));
 
     #region Events 
     private void _core_KeyDown(Key key)
@@ -247,6 +249,13 @@ internal class ColorTerminal : IDisposable
                 _currentRow = Rows - 1;
             }
         }
+    }
+
+    public void SetWindowSize(int cols, int rows)
+    {
+        Cols = cols;
+        Rows = rows;
+        _core.CoreWindow.Size = CalculateWindowSize;
     }
 
     //public CharInfo ReadChar()

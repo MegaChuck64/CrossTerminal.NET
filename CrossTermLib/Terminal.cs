@@ -55,6 +55,11 @@ public class Terminal(int cols, int rows, string fontPath, int fontSize, string 
 
     public (int x, int y) GetWindowSize() =>
         (_colorTerminal.Cols, _colorTerminal.Rows);
+
+    public void SetWindowSize(int cols, int rows) =>
+        _colorTerminal.SetWindowSize(cols, rows);
+
+
     protected virtual void Dispose(bool disposing)
     {
         if (!disposedValue)

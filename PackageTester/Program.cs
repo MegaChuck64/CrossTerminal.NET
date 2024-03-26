@@ -40,7 +40,7 @@ namespace PackageTester
             var rand = new Random();
             var size = terminal.GetWindowSize();
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 200; i++)
             {
                 for (int x = 0; x < size.x; x++)
                 {
@@ -50,6 +50,8 @@ namespace PackageTester
                         terminal.Write(RandChar(rand), RandColor(rand));
                     }
                 }
+
+                terminal.Refresh();
 
             }
 

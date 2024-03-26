@@ -91,7 +91,7 @@ namespace CrossTermTester
 
                 var size = terminal.GetWindowSize();
 
-                for (int i = 0; i < 500; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     for (int x = 0; x < size.x; x++)
                     {
@@ -104,13 +104,25 @@ namespace CrossTermTester
 
                     terminal.Refresh();
 
-                    Task.Delay(10);
+                    if (i % 2 == 0)
+                        terminal.SetWindowSize(40, 20);
+                    else
+                        terminal.SetWindowSize(60, 30);
+
+                    Task.Delay(250).Wait();
                 }
 
-                terminal.ReadLine();
+                break;
 
             } while (!terminal.IsClosing);
 
+            terminal.ReadLine();
+
+            terminal.SetWindowSize(40, 20);
+
+            terminal.ReadLine();
+
+            terminal.SetWindowSize(60, 30);
 
             terminal.ReadLine();
         }

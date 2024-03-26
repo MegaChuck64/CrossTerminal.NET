@@ -76,15 +76,6 @@ internal class TerminalCore : IDisposable
         CoreWindow_Resize(CoreWindow.Size);
     }
 
-    public void Tick(bool addEmptyEvent = true)
-    {        
-        if (addEmptyEvent)
-            CoreWindow.ContinueEvents();
-
-        CoreWindow.DoEvents();
-
-        CoreWindow.DoRender();        
-    }
 
     private void TerminalCore_KeyChar(IKeyboard arg1, char arg2)
     {
@@ -142,6 +133,15 @@ internal class TerminalCore : IDisposable
         CoreGraphicsDevice.Clear(ClearBuffers.Color);
     }
 
+    public void Tick(bool addEmptyEvent = true)
+    {
+        if (addEmptyEvent)
+            CoreWindow.ContinueEvents();
+
+        CoreWindow.DoEvents();
+
+        CoreWindow.DoRender();
+    }
 
 
     private void Dispose(bool disposing)
