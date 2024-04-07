@@ -96,25 +96,29 @@ public class Terminal : IConsole, IColorConsole, IDisposable
 {
     private bool disposedValue;
 
+    private const string _charsCheck = @"123456789`~!@#$%^&*()-_=+qwertyuiop[{]}\|asdfghjkl;:'"";zxcvbnm,<.>/?QWERTYUIOPASDFGHJKLZXCVBNM";
+
     private readonly TerminalCore _core;
     private readonly Vector2 _characterSize;
     private readonly Font _font;
-    private ColorChar[,] _buffer;
+    private readonly ColorChar[,] _buffer;
 
     private bool _entered = false;
     private bool _keyTyped = false;
     private bool _isDebugging = false;
     private float _cursorTimer = 0f;
     private bool _showCursor = false;
+    private int _currentCol;
+    private int _currentRow;
 
     public int Cols { get; private set; }
     public int Rows { get; private set; }
     public string Title { get; private set; }
     public float PaddingPercentage { get; private set; }
     public float FontSize { get; private set; }
+    public Color BackgroundColor { get; set; }
+    public float CursorBlinkRate { get; set; }
 
-    private int _currentCol;
-    private int _currentRow;
     public int CurrentCol
     {
         get { return _currentCol; }
@@ -134,14 +138,18 @@ public class Terminal : IConsole, IColorConsole, IDisposable
                 _currentRow = value;
         }
     }
+    
     public int PixelWidth => _core.Window.Size.X;
     public int PixelHeight => _core.Window.Size.Y;
 
     public bool IsClosing => _core.IsClosing;
 
+    private int GetCellWidth => (int)Math.Round(_characterSize.X * PaddingPercentage);
+    private int GetCellHeight => (int)Math.Round(_characterSize.Y * PaddingPercentage);
 
-    public Color BackgroundColor { get; set; }
-    public float CursorBlinkRate { get; set; }
+    private Vector2D<int> GetCellSize => new(GetCellWidth, GetCellHeight);
+    private Vector2D<int> GetWindowPixelSize => new(GetCellWidth * Cols, GetCellHeight * Rows);
+
 
 
     public Terminal(int cols, int rows, string fontPath, int fontSize, string title, float cursorBlinkSpeed, float paddingPercentage, Color defaultFontColor, Color backgroundColor)
@@ -163,7 +171,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
             Size = new Vector2D<int>(100, 100),
             Title = title,
             WindowBorder = WindowBorder.Fixed,
-
         };
 
         _core = new TerminalCore(options);
@@ -184,46 +191,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         _core.KeyDown += _core_KeyDown;
     }
 
-    private int GetCellWidth => (int)Math.Round(_characterSize.X * PaddingPercentage);
-    private int GetCellHeight => (int)Math.Round(_characterSize.Y * PaddingPercentage);
-
-    private Vector2D<int> GetCellSize => new(GetCellWidth, GetCellHeight);
-
-    private const string _charsCheck = @"123456789`~!@#$%^&*()-_=+qwertyuiop[{]}\|asdfghjkl;:'"";zxcvbnm,<.>/?QWERTYUIOPASDFGHJKLZXCVBNM";
-    private static float WidestCharacterWidth(Font font)
-    {
-        var w = 0f;
-        var ch = ' ';
-        foreach (var c in _charsCheck)
-        {            
-            var width = font.MeasureString(c.ToString()).X;
-            if (width > w)
-            {
-                w = width;
-                ch = c;
-            }
-        }
-
-        return w;
-    }
-
-    private static float TallestCharacterHeight(Font font)
-    {
-        var h = 0f;
-        var ch = ' ';
-
-        foreach (var c in _charsCheck)
-        {
-            var height = font.MeasureString(c.ToString()).Y;
-            if (height > h)
-            { 
-                h = height;
-                ch = c;
-            }
-        }
-
-        return h;
-    }
 
     #region Events 
     private void _core_KeyDown(Key key)
@@ -262,7 +229,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
 
         Tick();
     }
-    public void Tick() => _core.Tick();
 
     private void _core_CharKeyDown(char c)
     {
@@ -301,7 +267,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         _core.Renderer.End();
     }
 
-    #endregion
 
     private void DrawBuffer()
     {
@@ -324,9 +289,13 @@ public class Terminal : IConsole, IColorConsole, IDisposable
                 }
             }
         }
-    } 
+    }
 
-    private Vector2D<int> CalculateWindowSize => new(GetCellWidth * Cols, GetCellHeight * Rows);
+    #endregion
+
+    #region Helpers
+
+    public void Tick() => _core.Tick();
 
     public void Clear()
     {
@@ -343,24 +312,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         CurrentRow = 0;
     }
 
-    public (int x, int y) GetCursorPosition()
-    {
-        return (CurrentCol, CurrentRow);
-    }
-
-    public char Read()
-    {
-        while (!_keyTyped && !_core.IsClosing)
-        {
-            Tick();
-        }
-
-        _keyTyped = false;
-
-        var c = _buffer[_currentCol, _currentRow].Char;
-        AdvanceCursor();
-        return c;
-    }
 
     public void AdvanceCursor()
     {
@@ -377,23 +328,49 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         }
     }
 
-    public string ReadLine()
+    private static float WidestCharacterWidth(Font font)
     {
-        while (!_entered && !_core.IsClosing)
+        var w = 0f;
+        var ch = ' ';
+        foreach (var c in _charsCheck)
         {
-            Tick();
+            var width = font.MeasureString(c.ToString()).X;
+            if (width > w)
+            {
+                w = width;
+                ch = c;
+            }
         }
 
-        _entered = false;
+        return w;
+    }
 
-        var line = string.Empty;
-        for (int i = 0; i < Cols; i++)
+    private static float TallestCharacterHeight(Font font)
+    {
+        var h = 0f;
+        var ch = ' ';
+
+        foreach (var c in _charsCheck)
         {
-            line += _buffer[i, CurrentRow - 1].Char;
+            var height = font.MeasureString(c.ToString()).Y;
+            if (height > h)
+            {
+                h = height;
+                ch = c;
+            }
         }
-        line = line.TrimEnd();
 
-        return line;
+        return h;
+    }
+
+
+    #endregion
+
+    #region Window Management
+
+    public (int x, int y) GetCursorPosition()
+    {
+        return (CurrentCol, CurrentRow);
     }
 
     public void SetBufferPosition(int x, int y)
@@ -423,7 +400,10 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         Cols = w;
         Rows = h;
     }
+    
+    #endregion
 
+    #region Write
     public void Write(char c)
     {
         _buffer[_currentCol, _currentRow].Char = c;
@@ -482,7 +462,10 @@ public class Terminal : IConsole, IColorConsole, IDisposable
 
     public void Write(string text, IEnumerable<Color> colors) =>
         Write(new ColorString(text, colors));
-
+    
+    #endregion
+    
+    #region WriteLine
 
     public void WriteLine(string text)
     {
@@ -537,6 +520,23 @@ public class Terminal : IConsole, IColorConsole, IDisposable
     public void WriteLine(string text, IEnumerable<Color> colors) =>
         WriteLine(new ColorString(text, colors));
 
+    #endregion
+
+    #region Read
+    public char Read()
+    {
+        while (!_keyTyped && !_core.IsClosing)
+        {
+            Tick();
+        }
+
+        _keyTyped = false;
+
+        var c = _buffer[_currentCol, _currentRow].Char;
+        AdvanceCursor();
+        return c;
+    }
+
     ColorChar IColorConsole.Read()
     {
         while (!_keyTyped && !_core.IsClosing)
@@ -549,6 +549,29 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         var c = _buffer[_currentCol, _currentRow];
         AdvanceCursor();
         return c;
+    }
+
+    #endregion
+
+    #region ReadLine
+
+    public string ReadLine()
+    {
+        while (!_entered && !_core.IsClosing)
+        {
+            Tick();
+        }
+
+        _entered = false;
+
+        var line = string.Empty;
+        for (int i = 0; i < Cols; i++)
+        {
+            line += _buffer[i, CurrentRow - 1].Char;
+        }
+        line = line.TrimEnd();
+
+        return line;
     }
 
     ColorString IColorConsole.ReadLine()
@@ -572,6 +595,10 @@ public class Terminal : IConsole, IColorConsole, IDisposable
             cols.Take(line.TrimEnd().Length));
     }
 
+    #endregion
+
+    #region Dispose
+
     protected virtual void Dispose(bool disposing)
     {
         if (!disposedValue)
@@ -591,4 +618,6 @@ public class Terminal : IConsole, IColorConsole, IDisposable
         Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
+    
+    #endregion
 }
