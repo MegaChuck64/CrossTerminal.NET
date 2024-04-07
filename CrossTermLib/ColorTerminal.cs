@@ -8,7 +8,6 @@ using System.Numerics;
 namespace CrossTermLib;
 
 
-
 internal class ColorTerminal : IDisposable
 {
     private bool disposedValue;
@@ -258,6 +257,7 @@ internal class ColorTerminal : IDisposable
         _core.CoreWindow.Size = CalculateWindowSize;
     }
 
+    //public void SetWindowPosition(int x, int y)
     //public CharInfo ReadChar()
     //{
     //    while(!_entered && !_core.IsClosing)

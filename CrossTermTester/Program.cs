@@ -1,5 +1,5 @@
-﻿using System.Numerics;
-using CrossTermLib;
+﻿using System.Drawing;
+using CrossTerminal.NET;
 
 namespace CrossTermTester
 {
@@ -10,28 +10,41 @@ namespace CrossTermTester
             RunTerminal();
         }
 
-
         private static void RunTerminal()
         {
             var rand = new Random();
 
             using var terminal = new Terminal(
-                cols: 60,
-                rows: 30,
+                cols: 50,
+                rows: 25,
                 fontPath: Path.Combine("Content", "Fonts", "Ubuntu.ttf"),
-                fontSize: 18,
+                fontSize: 20,
                 title: "Hollow World",
-                defaultFontColor: new Vector4(0f, 1f, 0f, 1f));
+                cursorBlinkSpeed: 0.4f,
+                paddingPercentage: 1.2f,
+                defaultFontColor: Color.White,
+                backgroundColor: Color.Black
+                );
 
-            terminal.Write("-------------", RandColor(rand));
-            terminal.Write("hollow world", RandColor(rand));
-            terminal.Write("-------------", RandColor(rand));
+            terminal.Write("-----------", Color.White);
+            terminal.Write("hollow world", (c, i) => RandCol(rand));
+            terminal.WriteLine("-----------", RandCol(rand));
+            
+            var line = terminal.ReadLine();
+            terminal.WriteLine("You typed: " + line, (c) => c is 'e' or 'o' or 'a' or 'i' or 'u' ? RandCol(rand) : Color.Yellow);
+
+            terminal.SetWindowSize(26, 13);
+            terminal.WriteLine("Testing...", (c, i) => i % 2 == 0 ? Color.Green : Color.Blue);
             terminal.ReadLine();
+            terminal.SetWindowSize(50, 25);
+            terminal.ReadLine();
+
             string name;
             do
             {
                 terminal.Clear();
-                terminal.WriteLine("Hi... please enter your name");
+                var rand1 = RandCol(rand);
+                terminal.WriteLine("Hi... please enter your name", (c, i) => i % 2 == 0 ? Color.Green : Color.Pink);
                 name = terminal.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(name))
@@ -48,90 +61,12 @@ namespace CrossTermTester
 
             terminal.ReadLine();
 
-            (var cols, var rows) = terminal.GetWindowSize();
-            var message = "? ? ? ? hello world ? ? ? ?";
-
-            terminal.SetCursorPosition((cols / 2) - (message.Length / 2), (rows / 2));
-
-            foreach (var ch in message)
-            {
-                terminal.Write(ch, RandColor(rand));
-            }
-
-            string scene;
-            do
-            {
-                terminal.Clear();
-
-                terminal.Write("------- ", new Vector4(1f, 0f, 0.2f, 1f));
-                terminal.Write("MENU", new Vector4(0f, 0.2f, 1f, 1f));
-                terminal.WriteLine(" -------", new Vector4(1f, 0f, 0.2f, 1f));
-                terminal.WriteLine("1. play");
-                terminal.WriteLine("2. leaderboard");
-                terminal.WriteLine("3. settings");
-
-                var choice = terminal.ReadLine();
-
-                if (choice == "1")
-                {
-                    scene = "play";
-                }
-                else if (choice == "2")
-                {
-                    scene = "leaderboard";
-                }
-                else if (choice == "3")
-                {
-                    scene = "settings";
-                }
-
-                terminal.ReadLine();
-
-                terminal.Clear();
-
-                var size = terminal.GetWindowSize();
-
-                for (int i = 0; i < 10; i++)
-                {
-                    for (int x = 0; x < size.x; x++)
-                    {
-                        for (int y = 0; y < size.y; y++)
-                        {
-                            terminal.SetCursorPosition(x, y);
-                            terminal.Write(RandChar(rand), RandColor(rand));
-                        }
-                    }
-
-                    terminal.Refresh();
-
-                    if (i % 2 == 0)
-                        terminal.SetWindowSize(40, 20);
-                    else
-                        terminal.SetWindowSize(60, 30);
-
-                    Task.Delay(250).Wait();
-                }
-
-                break;
-
-            } while (!terminal.IsClosing);
-
-            terminal.ReadLine();
-
-            terminal.SetWindowSize(40, 20);
-
-            terminal.ReadLine();
-
-            terminal.SetWindowSize(60, 30);
-
-            terminal.ReadLine();
         }
 
-        private static Vector4 RandColor(Random rand)
+        private static Color RandCol(Random rand)
         {
-            return new Vector4((float)rand.NextDouble(), (float)rand.NextDouble(), (float)rand.NextDouble(), 1f);
+            return Color.FromArgb(255, rand.Next(255), rand.Next(255), rand.Next(255));
         }
-
         private static readonly string charOptions = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()?><;':{}[]_+-=~`";
 
         private static char RandChar(Random rand) => charOptions[rand.Next(charOptions.Length)];

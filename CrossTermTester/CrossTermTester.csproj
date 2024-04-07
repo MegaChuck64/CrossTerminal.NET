@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CrossTermLib\CrossTermLib.csproj" />
+    <ProjectReference Include="..\CrossTerminal.NET\CrossTerminal.NET.csproj" />
   </ItemGroup>
 
 </Project>

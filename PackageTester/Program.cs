@@ -8,6 +8,19 @@ namespace PackageTester
     {
         static void Main(string[] args)
         {
+
+            Console.SetWindowSize(40, 20);
+            Console.SetBufferSize(60, 30);
+            Console.SetWindowPosition(0, 0);
+            var m = "Hello World...";
+            Console.SetCursorPosition(20 - (m.Length / 2), 10);
+            Console.WriteLine(m);
+
+            var read = Console.ReadLine();
+            Console.SetWindowPosition(20 - (m.Length / 2), 10);
+
+            Console.ReadLine();
+
             using var terminal = new Terminal(
                  cols: 60,
                  rows: 30,
