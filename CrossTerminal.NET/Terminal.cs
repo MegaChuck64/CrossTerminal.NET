@@ -1,7 +1,6 @@
 ﻿using Silk.NET.Input;
 using Silk.NET.Maths;
 using Silk.NET.Windowing;
-using System.Data;
 using System.Drawing;
 using System.Numerics;
 
@@ -89,6 +88,16 @@ public struct ColorString
     {
         get { return Chars[i]; }
         set { Chars[i] = value; }
+    }
+
+    public override readonly string ToString()
+    {
+        string s = string.Empty;
+        foreach (var cc in Chars)
+        {
+            s += cc.Char;
+        }
+        return s;
     }
 }
 
